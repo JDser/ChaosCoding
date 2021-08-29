@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Float
   m_EditorClassIdentifier: 
   _type: 1
-  _valueName: float
+  _dataName: float
   _color: {r: 0.39215687, g: 0.5573976, b: 0.85882354, a: 1}
   _secondColor: {r: 0.39215687, g: 0.85882354, b: 0.400781, a: 1}

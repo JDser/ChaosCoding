@@ -14,62 +14,51 @@ public class StartNode : NodeBase
 
     private void SetupLineAnimators()
     {
-        lineAnims = new UILineAnimation[_createdOutputs.Length];
+        lineAnims = new UILineAnimation[_outgoingConnections.Length];
 
-        for (int i = 0; i < _createdOutputs.Length; i++)
+        for (int i = 0; i < _outgoingConnections.Length; i++)
         {
-            lineAnims[i] = (UILineAnimation)_createdOutputs[i].LineRenderer;
-            lineAnims[i].SecondColor = _createdOutputs[i].InputType.SecondColor;
+            NodeConnection current = _outgoingConnections[i];
 
-            lineAnims[i].OnAnimationEnd += Anim_OnAnimationEnd;
+            lineAnims[i] = (UILineAnimation)current.NodeOutputBase.LineRenderer;
+            lineAnims[i].SecondColor = current.NodeOutputBase.InputType.SecondColor;
+
+            lineAnims[i].OnAnimationEnd += OnAnimationEnd;
         }
     }
 
     public override void Enact()
     {
-        LevelManager.PlaySound(clip);
         StopAllCoroutines();
-        StartCoroutine(ShakeAnimationRoutine());
 
-        for (int i = 0; i < outgoingConnections.Length; i++)
+
+        for (int i = 0; i < _outgoingConnections.Length; i++)
         {
-            if (outgoingConnections[i] == null)
+            if (_outgoingConnections[i].IsValid == false)
+            {
+                LevelManager.PlaySound(failClip);
+                StartCoroutine(FailRoutine());
+
                 return;
+            }
 
             lineAnims[i].StartAnimation();
         }
+
+        LevelManager.PlaySound(successClip);
+        StartCoroutine(ShakeAnimationRoutine());
     }
 
     public override void CheckNewOutput() { }
 
-    private void Anim_OnAnimationEnd()
+    private void OnAnimationEnd()
     {
-        for (int i = 0; i < outgoingConnections.Length; i++)
+        for (int i = 0; i < _outgoingConnections.Length; i++)
         {
-            if (outgoingConnections[i] != null)
+            if (_outgoingConnections[i].IsValid)
             {
-                outgoingConnections[i].InputNode.Enact();
+                _outgoingConnections[i].InputNode.Enact();
             }
         }
     }
-
-
-
-    private IEnumerator ShakeAnimationRoutine()
-    {
-        float _progress = 0;
-        float zAmount;
-
-        while (_progress < 1)
-        {
-            _progress += Time.deltaTime * 5;
-
-            zAmount = Mathf.Sin(_progress * 50) * 2.5f;
-
-            dragRectTransform.rotation = Quaternion.Euler(0, 0, zAmount);
-
-            yield return null;
-        }
-    }
-
 }

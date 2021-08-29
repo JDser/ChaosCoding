@@ -16,9 +16,6 @@ public class LevelManager : MonoBehaviour
     [SerializeField] StartNode startNode;
     [SerializeField] EndNode endNode;
 
-    [Header("Audio")]
-    [SerializeField] AudioClip failedClip;
-
     AudioSource source;
 
     Canvas[] canvases;
@@ -52,7 +49,7 @@ public class LevelManager : MonoBehaviour
         Instance = this;
         source = GetComponent<AudioSource>();
 
-        endNode.OnCheckEnd += EndNode_OnCheckEnd;
+        endNode.OnCheckEnd += OnCheckEnd;
 
         canvases = GetComponentsInChildren<Canvas>();
         raycasters = GetComponentsInChildren<GraphicRaycaster>();
@@ -63,16 +60,12 @@ public class LevelManager : MonoBehaviour
     }
 
 
-    private void EndNode_OnCheckEnd(bool result)
+    private void OnCheckEnd(bool result)
     {
         if (result)
         {
             InteractCanvas = false;
             GameManager.NextLevel();
-        }
-        else
-        {
-            source.PlayOneShot(failedClip);
         }
     }
 

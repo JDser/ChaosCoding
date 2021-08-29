@@ -16,9 +16,9 @@ public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHan
     [SerializeField] protected AudioClip connectFailedClip;
 
     #region NonSerialized
-    protected InputStruct inputType;
-    protected NodeBase parentNode;
-    protected int nodeIndex;
+    protected InputData _inputType;
+    protected NodeBase _parentNode;
+    protected int _nodeIndex;
 
     protected RectTransform rectImage;
     protected CanvasGroup group;
@@ -27,6 +27,16 @@ public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHan
     #endregion
 
     #region Properties
+    public NodeBase ParentNode
+    {
+        get => _parentNode;
+    }
+    public int NodeIndex
+    {
+        set => _nodeIndex = value;
+        get => _nodeIndex;
+    }
+
     public bool IsOutput
     {
         get
@@ -48,19 +58,20 @@ public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHan
             text_Type.alignment = value ? TextAlignmentOptions.Right : TextAlignmentOptions.Left ;
         }
     }
-    public InputStruct InputType { get => inputType; }
+    public InputData InputType
+    {
+        get => _inputType; 
+    }
     public UILineRenderer LineRenderer
     {
         get => lineRenderer;
     }  
-
-    public NodeBase ParentNode
+    public string Name
     {
-        get => parentNode;
-    }
-    public int NodeIndex
-    {
-        get => nodeIndex;
+        set
+        {
+            text_Type.text = value;
+        }
     }
     #endregion
 
@@ -71,44 +82,33 @@ public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHan
         group = GetComponent<CanvasGroup>();
         rectImage = image.GetComponent<RectTransform>();
 
-        parentNode = GetComponentInParent<NodeBase>();
+        _parentNode = GetComponentInParent<NodeBase>();
     }
 
-    public virtual void SetInput(InputStruct type,int index)
+    public virtual void ChangeInputType(InputData type)
     {
-        inputType = type;
-        nodeIndex = index;
+        _inputType = type;
 
-        lineRenderer.color = inputType.Color;
-        image.color = inputType.Color;
-
-        if (string.IsNullOrEmpty(type.Value) == false)
-            text_Type.text = type.Value;
-        else
-            text_Type.text = type.ValueName;
-    }
-    public virtual void ChangeInput(InputStruct type)
-    {
-        inputType = type;
-
-        lineRenderer.color = inputType.Color;
-        image.color = inputType.Color;
-
-        if (string.IsNullOrEmpty(type.Value) == false)
-            text_Type.text = type.Value;
-        else
-            text_Type.text = type.ValueName;
+        lineRenderer.color = _inputType.Color;
+        image.color = _inputType.Color;
     }
 
     public virtual void Clear()
     {
-        parentNode.RemoveOutputConnection(nodeIndex);
+        _parentNode.ClearOutgoingConnection(_nodeIndex);
         lineRenderer.Clear();    
     }
 
     public virtual void ConnectNode(NodeInputBase inputNode)
     {
-        if (inputType.Type != inputNode.InputType.Type)
+        if (_inputType.Type != inputNode.InputType.Type)
+        {
+            lineRenderer.End = Vector2.zero;
+            LevelManager.PlaySound(connectFailedClip);
+            return;
+        }
+
+        if (inputNode.ParentNode.HasReferenceTo(_parentNode))
         {
             lineRenderer.End = Vector2.zero;
             LevelManager.PlaySound(connectFailedClip);
@@ -116,7 +116,12 @@ public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHan
         }
 
         lineRenderer.Target = inputNode.LineRenderer.rectTransform;
-        parentNode.AddOutputConnection(inputNode.parentNode, inputNode.nodeIndex, nodeIndex);
+
+
+        _parentNode.AddOutputConnection(inputNode._parentNode, inputNode._nodeIndex, _nodeIndex);
+        inputNode._parentNode.AddInputConnection(_parentNode, inputNode._nodeIndex,_nodeIndex);
+
+
         LevelManager.PlaySound(connectSuccessClip);
     }
     
@@ -147,9 +152,7 @@ public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHan
             return;
 
         NodeInputBase original = eventData.pointerDrag.GetComponent<NodeInputBase>(); // first selected nodeInput
-
-        if (original.ParentNode == parentNode) return;
-
+        if (original.ParentNode == _parentNode) return;
         original.ConnectNode(this);
     }
     public virtual void OnEndDrag(PointerEventData eventData)

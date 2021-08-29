@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Bool
   m_EditorClassIdentifier: 
   _type: 2
-  _valueName: bool
+  _dataName: bool
   _color: {r: 0.801, g: 0.7487748, b: 0.27874804, a: 1}
   _secondColor: {r: 0.24991766, g: 0.515994, b: 0.85882354, a: 1}

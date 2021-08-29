@@ -943,6 +943,10 @@ PrefabInstance:
       propertyPath: inputs.Array.data[0]._prefab
       value: 
       objectReference: {fileID: 11400000, guid: e6cc07a974784ae42ab061e3700e5ffd, type: 2}
+    - target: {fileID: 9010770421217292332, guid: 93a09a55d6b81fe44a87968acc1bcf15, type: 3}
+      propertyPath: inputs.Array.data[0]._defaultValue
+      value: true
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 93a09a55d6b81fe44a87968acc1bcf15, type: 3}
 --- !u!224 &4890658111389850921 stripped
@@ -2560,7 +2564,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startNode: {fileID: 8296101601689744929}
   endNode: {fileID: 4890658111389850922}
-  failedClip: {fileID: 8300000, guid: 39dcbb0cf8e2fd2418b827725047935a, type: 3}
 --- !u!1 &6234107003853409061
 GameObject:
   m_ObjectHideFlags: 0
@@ -3116,6 +3119,10 @@ PrefabInstance:
       propertyPath: outputs.Array.data[0]._prefab
       value: 
       objectReference: {fileID: 11400000, guid: e6cc07a974784ae42ab061e3700e5ffd, type: 2}
+    - target: {fileID: 1984667172377426981, guid: 36a2aa33fe7f15045a33874b44a95c7c, type: 3}
+      propertyPath: outputs.Array.data[0]._defaultValue
+      value: true
+      objectReference: {fileID: 0}
     - target: {fileID: 5474619233547677065, guid: 36a2aa33fe7f15045a33874b44a95c7c, type: 3}
       propertyPath: m_Name
       value: Start Node

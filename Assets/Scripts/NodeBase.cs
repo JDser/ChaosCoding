@@ -2,56 +2,95 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-
+using System.Collections;
 
 [System.Serializable]
-public class NodeConnection
+public struct NodeConnection
 {
-    [SerializeField] NodeBase _inputNode;
-    [SerializeField] InputStruct _inputStruct;
-    [SerializeField] int _inputIndex;
-
     [SerializeField] NodeBase _outputNode;
-    [SerializeField] InputStruct _outputStruct;
+    [SerializeField] InputData _outputStruct;
+    [SerializeField] NodeInputBase _nodeOutputBase;
     [SerializeField] int _outputIndex;
 
-    public NodeBase InputNode
-    {
-        get => _inputNode;
-    }  
-    public InputStruct InputStruct
-    {
-        get => _inputStruct;
-    }
-    public int InputIndex
-    {
-        get => _inputIndex;
-    }
+    [Space]
 
+    [SerializeField] NodeBase _inputNode;
+    [SerializeField] InputData _inputStruct;
+    [SerializeField] NodeInputBase _nodeInputBase;
+    [SerializeField] int _inputIndex;
+
+    #region Properties
     public NodeBase OutputNode
     {
         get => _outputNode;
     }
-    public InputStruct OutputStruct
+    public InputData OutputStruct
     {
         get => _outputStruct;
+    }
+    public NodeInputBase NodeOutputBase
+    {
+        get => _nodeOutputBase;
     }
     public int OutputIndex
     {
         get => _outputIndex;
     }
 
-
-    public NodeConnection(NodeBase input, int inputInd, NodeBase output, int outputInd)
+    public NodeBase InputNode
     {
-        _inputNode = input;
-        _inputStruct = input.Inputs[inputInd];
-        _inputIndex = inputInd;
-
-        _outputNode = output;
-        _outputStruct = output.Outputs[outputInd];
-        _outputIndex = outputInd;
+        get => _inputNode;
+    }  
+    public InputData InputStruct
+    {
+        get => _inputStruct;
     }
+    public NodeInputBase NodeInputBase 
+    {
+        get => _nodeInputBase;
+    }
+    public int InputIndex
+    {
+        get => _inputIndex;
+    }
+
+    public bool IsValid
+    {
+        get => _inputNode != null && _outputNode != null;
+    }
+    #endregion
+
+    #region Methods
+    public void SetInput(NodeBase node,InputData inputStruct, NodeInputBase nodeInput,int index)
+    {
+        _inputNode = node;
+        _inputStruct = inputStruct;
+        _nodeInputBase = nodeInput;
+        _inputIndex = index;
+    }
+    public void ClearInput()
+    {
+        _inputNode = null;
+        _inputStruct = null;
+        _nodeInputBase = null;
+        _inputIndex = -1;
+    }
+
+    public void SetOutput(NodeBase node, InputData inputStruct, NodeInputBase nodeInput, int index)
+    {
+        _outputNode = node;
+        _outputStruct = inputStruct;
+        _nodeOutputBase = nodeInput;
+        _outputIndex = index;
+    }
+    public void ClearOutput()
+    {
+        _outputNode = null;
+        _outputStruct = null;
+        _nodeOutputBase = null;
+        _outputIndex = -1;
+    }
+    #endregion
 }
 
 public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
@@ -76,22 +115,20 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
     [SerializeField] NodeInputBase inputPrefab;
 
     [Header("Audio")]
-    [SerializeField] protected AudioClip clip;  
+    [SerializeField] protected AudioClip successClip;  
+    [SerializeField] protected AudioClip failClip;  
     
     [Header("Inputs & Outputs")]
-    [SerializeField] protected InputStruct[] inputs;
-    [SerializeField] protected InputStruct[] outputs;
+    [SerializeField] protected InputData[] inputs;
+    [SerializeField] protected InputData[] outputs;
 
     #region NonSerialized
     protected Canvas canvas;
     protected RectTransform dragRectTransform;
 
-    protected NodeInputBase[] _createdInputs;
-    protected NodeInputBase[] _createdOutputs;
-
-    protected NodeConnection[] incomingConnections;
-    protected NodeConnection[] outgoingConnections;
-
+    protected NodeConnection[] _incomingConnections;
+    protected NodeConnection[] _outgoingConnections; 
+    
     bool _isDrag;
 
     Vector3 prevMousePosition;
@@ -102,15 +139,15 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
     Vector3 newRotation;
     #endregion
 
-    public InputStruct[] Inputs
+    public NodeConnection[] IncomingConnections
     {
-        get => inputs;
-    }  
-    public InputStruct[] Outputs
-    {
-        get => outputs;
+        get => _incomingConnections;
     }
-
+    public NodeConnection[] OutgoingConnections
+    {
+        get => _outgoingConnections;
+    }
+    
     #endregion
 
     #region BuiltIn Methods
@@ -122,11 +159,13 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
         SetupNode();
     }
 
+    #if UNITY_EDITOR
     protected void OnValidate()
     {
         text_nodeName.text = nodeName;
         nodeNameBackground.color = color;
     }
+    #endif
 
     protected void Update()
     {
@@ -146,30 +185,36 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
         nodeNameBackground.color = color;
 
         #region Outputs
-        outgoingConnections = new NodeConnection[outputs.Length];
-        _createdOutputs = new NodeInputBase[outputs.Length];
+        _outgoingConnections = new NodeConnection[outputs.Length];
 
         for (int i = 0; i < outputs.Length; i++)
         {
-            NodeInputBase _nodeInput = Instantiate(inputPrefab, container_outputs);
-            _nodeInput.SetInput(outputs[i], i);
-            _nodeInput.IsOutput = true;
+            NodeInputBase _nodeOutput = Instantiate(inputPrefab, container_outputs);
 
-            _createdOutputs[i] = _nodeInput;
+            _nodeOutput.NodeIndex = i;
+            _nodeOutput.Name = string.IsNullOrEmpty(outputs[i].DefaultValue) ? outputs[i].DataName : outputs[i].DefaultValue;
+
+            _nodeOutput.ChangeInputType(outputs[i]);
+            _nodeOutput.IsOutput = true;
+
+            _outgoingConnections[i].SetOutput(this, outputs[i], _nodeOutput, i);
         }
         #endregion
 
         #region Inputs
-        incomingConnections = new NodeConnection[inputs.Length];
-        _createdInputs = new NodeInputBase[inputs.Length];
+        _incomingConnections = new NodeConnection[inputs.Length];
 
         for (int i = 0; i < inputs.Length; i++)
         {
             NodeInputBase _nodeInput = Instantiate(inputPrefab, container_inputs);
-            _nodeInput.SetInput(inputs[i], i);
+
+            _nodeInput.NodeIndex = i;
+            _nodeInput.Name = string.IsNullOrEmpty(inputs[i].DefaultValue) ? inputs[i].DataName : inputs[i].DefaultValue;
+
+            _nodeInput.ChangeInputType(inputs[i]);
             _nodeInput.IsOutput = false;
 
-            _createdInputs[i] = _nodeInput;
+            _incomingConnections[i].SetInput(this, inputs[i], _nodeInput, i);
         }
         #endregion
 
@@ -190,67 +235,68 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
 
     public bool HasReferenceTo(NodeBase reference)
     {
-        for (int i = 0; i < incomingConnections.Length; i++)
-        {
-            if (incomingConnections[i] == null) continue;
+        bool hasReference = false;
 
-            if (incomingConnections[i].InputNode == reference)
+        for (int i = 0; i < _outgoingConnections.Length; i++)
+        {
+            if (_outgoingConnections[i].IsValid == false) 
+                continue;
+
+            if (_outgoingConnections[i].InputNode == reference)
                 return true;
-            if (incomingConnections[i].OutputNode == reference)
-                return true;
+
+            hasReference = _outgoingConnections[i].InputNode.HasReferenceTo(reference);
         }
 
-        for (int i = 0; i < outgoingConnections.Length; i++)
-        {
-            if (outgoingConnections[i] == null) continue;
-
-            if (outgoingConnections[i].InputNode == reference)
-                return true;
-            if (outgoingConnections[i].OutputNode == reference)
-                return true;
-        }
-
-        return false;
+        return hasReference;
     }
 
     #region Connection Managment
     public virtual void AddOutputConnection(NodeBase inputNode, int otherInputIndex, int thisOutputIndex)
     {
-        outgoingConnections[thisOutputIndex] = new NodeConnection(inputNode, otherInputIndex, this, thisOutputIndex);
-        outgoingConnections[thisOutputIndex].InputNode.AddInputConnection(outgoingConnections[thisOutputIndex]);
-    }
-    protected virtual void AddInputConnection(NodeConnection connection)
-    {
-        if (incomingConnections[connection.InputIndex] != null)
-            incomingConnections[connection.InputIndex].OutputNode.ClearOutgoingConnection(incomingConnections[connection.InputIndex].OutputIndex);
-
-        incomingConnections[connection.InputIndex] = connection;
-    }
-
-
-    public virtual void RemoveOutputConnection(int outputIndex)
-    {
-        if (outgoingConnections[outputIndex] != null)
+        if (_outgoingConnections[thisOutputIndex].IsValid)
         {
-            outgoingConnections[outputIndex].InputNode.RemoveInputConnection(outgoingConnections[outputIndex].InputIndex);
-            outgoingConnections[outputIndex] = null;
+            _outgoingConnections[thisOutputIndex].ClearInput();
         }
+        
+        _outgoingConnections[thisOutputIndex].SetInput(
+            inputNode, 
+            inputNode.inputs[otherInputIndex],
+            inputNode._incomingConnections[otherInputIndex].NodeInputBase, 
+            otherInputIndex);
     }
-    protected virtual void RemoveInputConnection(int index)
+    public virtual void AddInputConnection(NodeBase inputNode, int thisInputIndex, int otherOutputIndex)
     {
-        incomingConnections[index] = null;
+        if (_incomingConnections[thisInputIndex].IsValid)
+        {
+            _incomingConnections[thisInputIndex].OutputNode.ClearOutgoingConnectionIgnore(_incomingConnections[thisInputIndex].OutputIndex);
+            _incomingConnections[thisInputIndex].ClearOutput();
+        }
+
+       _incomingConnections[thisInputIndex].SetOutput(
+            inputNode,
+            inputNode.outputs[otherOutputIndex], 
+            inputNode._outgoingConnections[otherOutputIndex].NodeOutputBase,
+            otherOutputIndex);
     }
+    public virtual void ClearOutgoingConnection(int connectionIndex)
+    {
+        if (_outgoingConnections[connectionIndex].IsValid == false) return;
 
+        _outgoingConnections[connectionIndex].InputNode.ClearIncomingConnection(_outgoingConnections[connectionIndex].InputIndex);
+        _outgoingConnections[connectionIndex].ClearInput();
+    } 
+    
+    public virtual void ClearOutgoingConnectionIgnore(int connectionIndex)
+    {
+        if (_outgoingConnections[connectionIndex].IsValid == false) return;
 
+        _outgoingConnections[connectionIndex].ClearInput();
+        _outgoingConnections[connectionIndex].NodeOutputBase.LineRenderer.Clear();
+    }
     protected virtual void ClearIncomingConnection(int connectionIndex)
     {
-        _createdInputs[connectionIndex].Clear();
-        incomingConnections[connectionIndex] = null;
-    }   
-    protected virtual void ClearOutgoingConnection(int connectionIndex)
-    {
-        _createdOutputs[connectionIndex].Clear();
-        outgoingConnections[connectionIndex] = null;
+        _incomingConnections[connectionIndex].ClearOutput();
     }
     #endregion
 
@@ -282,6 +328,41 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
     public void OnEndDrag(PointerEventData eventData)
     {
         _isDrag = false;
+    }
+    #endregion
+
+    #region Animations
+    protected IEnumerator ShakeAnimationRoutine()
+    {
+        float _progress = 0;
+        float zAmount;
+
+        while (_progress < 1)
+        {
+            _progress += Time.deltaTime * 5;
+
+            zAmount = Mathf.Sin(_progress * 50) * 2.5f;
+
+            dragRectTransform.rotation = Quaternion.Euler(0, 0, zAmount);
+
+            yield return null;
+        }
+    }
+    protected IEnumerator FailRoutine()
+    {
+        float _progress = 0;
+        float zAmount;
+
+        while (_progress < Mathf.PI)
+        {
+            _progress += Time.deltaTime * 20;
+            zAmount = -(Mathf.Sin(_progress) * 0.2f - 1);
+            dragRectTransform.localScale = new Vector3(zAmount, zAmount, zAmount);
+
+            yield return null;
+        }
+
+        dragRectTransform.localScale = Vector3.one;
     }
     #endregion
 }

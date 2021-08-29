@@ -20,20 +20,20 @@ public enum MathOperation
 }
 
 [System.Serializable]
-public class InputStruct
+public class InputData
 {
     [SerializeField] InputTypePrefab _prefab;
-    [SerializeField] string _value;
+    [SerializeField] string _defaultValue;
 
 
-    public string ValueName
+    public string DataName
     {
-        get => _prefab.ValueName;
+        get => _prefab.DataName;
     }
-    public string Value
+    public string DefaultValue
     {
-        get => _value;
-        set => _value = value;
+        get => _defaultValue;
+        set => _defaultValue = value;
     }
     public DataType Type 
     {
@@ -47,24 +47,22 @@ public class InputStruct
     {
         get => _prefab.SecondColor;
     }
-
     public bool IsValid
     {
         get => _prefab != null;
     }
-
 }
 
 [CreateAssetMenu(fileName = "New Input Type Prefab")]
 public class InputTypePrefab : ScriptableObject
 {
     [SerializeField] DataType _type;
-    [SerializeField] string _valueName;
+    [SerializeField] string _dataName;
     [SerializeField] Color _color;
     [SerializeField] Color _secondColor;
 
     public DataType InputType { get => _type; }
-    public string ValueName { get => _valueName; }
+    public string DataName { get => _dataName; }
     public Color Color { get => _color; }
     public Color SecondColor { get => _secondColor; }
 }

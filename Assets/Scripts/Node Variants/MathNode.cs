@@ -4,7 +4,7 @@ using System.Collections;
 public class MathNode : NodeBase
 {
     [Header("Custom")]
-    [SerializeField] InputStruct originVar;
+    [SerializeField] InputData originData;
     [SerializeField] MathOperation mathOperation;
 
     UILineAnimation[] lineAnims;
@@ -16,9 +16,9 @@ public class MathNode : NodeBase
         get
         {
             int validIncomes = 0;
-            for (int i = 0; i < incomingConnections.Length; i++)
+            for (int i = 0; i < _incomingConnections.Length; i++)
             {
-                if (incomingConnections[i] != null)
+                if (_incomingConnections[i].IsValid)
                     validIncomes++;
             }
             return validIncomes;
@@ -30,255 +30,210 @@ public class MathNode : NodeBase
         base.Awake();
         SetupLineAnimators();
     }
+   
     private void SetupLineAnimators()
     {
-        lineAnims = new UILineAnimation[_createdOutputs.Length];
+        lineAnims = new UILineAnimation[_outgoingConnections.Length];
 
-        for (int i = 0; i < _createdOutputs.Length; i++)
+        for (int i = 0; i < _outgoingConnections.Length; i++)
         {
-            lineAnims[i] = (UILineAnimation)_createdOutputs[i].LineRenderer;
-            lineAnims[i].SecondColor = _createdOutputs[i].InputType.SecondColor;
+            lineAnims[i] = (UILineAnimation)_outgoingConnections[i].NodeOutputBase.LineRenderer;
+            lineAnims[i].SecondColor = _outgoingConnections[i].NodeOutputBase.InputType.SecondColor;
 
-            lineAnims[i].OnAnimationEnd += Anim_OnAnimationEnd;
+            lineAnims[i].OnAnimationEnd += OnAnimationEnd;
         }
     }
 
-
-    private void Anim_OnAnimationEnd()
+    private void OnAnimationEnd()
     {
-        for (int i = 0; i < outgoingConnections.Length; i++)
+        for (int i = 0; i < _outgoingConnections.Length; i++)
         {
-            if (outgoingConnections[i] != null)
-                outgoingConnections[i].InputNode.Enact();
+            if (_outgoingConnections[i].IsValid)
+                _outgoingConnections[i].InputNode.Enact();
         }
     }
 
     public override void Enact()
     {
-        LevelManager.PlaySound(clip);
         StopAllCoroutines();
-        StartCoroutine(ShakeAnimationRoutine());
 
-        for (int i = 0; i < outgoingConnections.Length; i++)
+        for (int i = 0; i < _outgoingConnections.Length; i++)
         {
-            if (outgoingConnections[i] == null)
+            if (_outgoingConnections[i].IsValid == false)
+            {
+                LevelManager.PlaySound(failClip);
+                StartCoroutine(FailRoutine());
+
                 return;
+            }
 
             lineAnims[i].StartAnimation();
         }
-    }
-    private IEnumerator ShakeAnimationRoutine()
-    {
-        float _progress = 0;
-        float zAmount;
 
-        while (_progress < 1)
-        {
-            _progress += Time.deltaTime * 5;
-
-            zAmount = Mathf.Sin(_progress * 50) * 2.5f;
-
-            dragRectTransform.rotation = Quaternion.Euler(0, 0, zAmount);
-
-            yield return null;
-        }
+        LevelManager.PlaySound(successClip);
+        StartCoroutine(ShakeAnimationRoutine());
     }
 
 
-    protected override void AddInputConnection(NodeConnection connection)
+    #region Connection Managment
+    public override void AddInputConnection(NodeBase inputNode, int thisInputIndex, int otherOutputIndex)
     {
-        base.AddInputConnection(connection);
+        base.AddInputConnection(inputNode, thisInputIndex, otherOutputIndex);
 
+        NodeConnection current = _incomingConnections[thisInputIndex];
 
-        if (string.IsNullOrEmpty(connection.OutputStruct.Value) == false)
-            (_createdInputs[connection.InputIndex] as MathNodeInput).ValueName = connection.OutputStruct.Value;
-        else
-            (_createdInputs[connection.InputIndex] as MathNodeInput).ValueName = connection.OutputStruct.ValueName;
-
-
+        currentType = current.OutputStruct.Type;
         CheckNewOutput();
     }
 
-    protected override void RemoveInputConnection(int index)
+    protected override void ClearIncomingConnection(int connectionIndex)
     {
-        base.RemoveInputConnection(index);
+        base.ClearIncomingConnection(connectionIndex);
 
-        if (originVar.IsValid)
-            (_createdInputs[index] as MathNodeInput).ValueName = originVar.ValueName;
-
-        ResetConnection();
-        CheckNewOutput();
-    }
-    public override void RemoveOutputConnection(int outputIndex)
-    {
-        base.RemoveOutputConnection(outputIndex);
-
-        ResetConnection();
-    }
-
-
-    private void ResetConnection()
-    {
-        for (int i = 0; i < incomingConnections.Length; i++)
+        if (string.IsNullOrEmpty(originData.DefaultValue))
         {
-            if (incomingConnections[i] != null)
-                return;
-        }
-        for (int i = 0; i < outgoingConnections.Length; i++)
-        {
-            if (outgoingConnections[i] != null)
-                return;
-        }
-
-
-        if (originVar.IsValid == false)
-        {
-            for (int i = 0; i < _createdInputs.Length; i++)
-            {
-                (_createdInputs[i] as MathNodeInput).ValueName = inputs[i].ValueName;
-            }
-            for (int i = 0; i < _createdOutputs.Length; i++)
-            {
-                (_createdOutputs[i] as MathNodeInput).ValueName = outputs[i].ValueName;
-            }
-            return;
+            _incomingConnections[connectionIndex].NodeInputBase.Name = originData.DataName;
+            inputs[connectionIndex].DefaultValue = null;
         }
         else
         {
-            currentType = originVar.Type;
-
-            for (int i = 0; i < _createdInputs.Length; i++)
-            {
-                _createdInputs[i].ChangeInput(originVar);
-                (_createdInputs[i] as MathNodeInput).ValueName = originVar.ValueName;
-            }
-            for (int i = 0; i < _createdOutputs.Length; i++)
-            {
-                _createdOutputs[i].ChangeInput(originVar);
-                (_createdOutputs[i] as MathNodeInput).ValueName = originVar.ValueName;
-            }
+            _incomingConnections[connectionIndex].NodeInputBase.Name = originData.DefaultValue;
+            inputs[connectionIndex].DefaultValue = originData.DefaultValue;
         }
+
+        currentType = originData.Type;
+
+        CheckNewOutput();
     }
+    #endregion
 
-    public void ChangeDataType(InputStruct type)
-    {
-        if (mathOperation == MathOperation.Cast) return;
+    //private void ResetConnection()
+    //{
+    //    for (int i = 0; i < _incomingConnections.Length; i++)
+    //    {
+    //        if (_incomingConnections[i].IsValid == false)
+    //            return;
+    //    }
+    //    for (int i = 0; i < _outgoingConnections.Length; i++)
+    //    {
+    //        if (_outgoingConnections[i].IsValid == false)
+    //            return;
+    //    }
+    //
+    //
+    //    if (originData.IsValid == false)
+    //    {
+    //        for (int i = 0; i < _incomingConnections.Length; i++)
+    //        {
+    //                _incomingConnections[i].NodeInputBase.Value = inputs[i].DataName;
+    //        }
+    //        for (int i = 0; i < _outgoingConnections.Length; i++)
+    //        {
+    //                _outgoingConnections[i].NodeOutputBase.Value = outputs[i].DataName;
+    //        }
+    //        return;
+    //    }
+    //    else
+    //        ChangeDataType(originData);
+    //}
+    //
+    //public void ChangeDataType(InputData type)
+    //{
+    //    currentType = type.Type;
+    //
+    //    for (int i = 0; i < _incomingConnections.Length; i++)
+    //    {
+    //            _incomingConnections[i].NodeInputBase.ChangeInputType(type);
+    //    }
+    //    for (int i = 0; i < _outgoingConnections.Length; i++)
+    //    {
+    //            _outgoingConnections[i].NodeInputBase.ChangeInputType(type);
+    //    }
+    //}
 
 
-        currentType = type.Type;
-
-        for (int i = 0; i < _createdInputs.Length; i++)
-        {
-            _createdInputs[i].ChangeInput(type);
-        }
-        for (int i = 0; i < _createdOutputs.Length; i++)
-        {
-            _createdOutputs[i].ChangeInput(type);
-        }
-    }
 
     public override void CheckNewOutput()
     {
-        if (_createdOutputs.Length > 1)
+        if (_outgoingConnections.Length > 1)
             Debug.LogError("More than 1 output!", this);
 
-        if (mathOperation == MathOperation.Cast)
-        {
-            if (incomingConnections[0] == null)
-                return;
 
-            string _out = incomingConnections[0].OutputStruct.Value;
-            SetNewOutput(_out);
-            return;
-        }
+        string current = "";
 
-        if (ValidIncomes < 2)
+        if (_incomingConnections[0].IsValid)
+            current = _incomingConnections[0].OutputStruct.DefaultValue;
+
+        for (int i = 1; i < _incomingConnections.Length; i++)
         {
-            for (int i = 0; i < incomingConnections.Length; i++)
+            if (_incomingConnections[i].IsValid == false) continue;
+
+            string next = _incomingConnections[i].OutputStruct.DefaultValue;
+
+            switch (mathOperation)
             {
-                if (incomingConnections[i] == null) continue;
-                SetNewOutput(incomingConnections[i].OutputStruct.Value);
-                return;
+                case MathOperation.Add:
+                    current = HandleAdd(current, next);
+                    break;
+
+                case MathOperation.Subtract:
+                    current = HandleSubtract(current, next);
+                    break;
+
+                case MathOperation.Multiply:
+                    current = HandleMultiply(current, next);
+                    break;
+
+                case MathOperation.Divide:
+                    current = HandleDivide(current, next);
+                    break;
+
+                case MathOperation.Cast:
+                    current = HandleCast(current);
+                    break;
+
+                default:
+                    break;
             }
 
-            SetNewOutput(null);
-            SetNewOutputIgnorePropagation(originVar.ValueName);
+        }
+
+        SetNewOutput(current);
+    }
+
+    private void SetNewOutput(string newValue, bool propagate = true)
+    {
+        Debug.Log(newValue);
+
+        if (string.IsNullOrEmpty(newValue))
+        {
+            _outgoingConnections[0].NodeOutputBase.Name = originData.DataName;
+            outputs[0].DefaultValue = null;
         }
         else
         {
-            string current = null;
+            //outputs[0].DefaultValue = _outgoingConnections[0].NodeOutputBase.Name = newValue;
 
-            if (incomingConnections[0] != null)
-                current = incomingConnections[0].OutputStruct.Value;
+            // BUG HERE
+            //_outgoingConnections[index].NodeOutputBase.Name = newValue;
 
-            for (int i = 1; i < incomingConnections.Length; i++)
-            {
-                if (incomingConnections[i] == null)
-                    continue;
-
-                string next = incomingConnections[i].OutputStruct.Value;
-
-
-                switch (mathOperation)
-                {
-                    case MathOperation.Add:
-                        current = HandleAdd(current,next);
-                        break;
-
-                    case MathOperation.Subtract:
-                        current = HandleSubtract(current, next);
-                        break;
-
-                    case MathOperation.Multiply:
-                        current = HandleMultiply(current, next);
-                        break;
-
-                    case MathOperation.Divide:
-                        current = HandleDivide(current, next);
-                        break;
-
-                    default:
-                        break;
-                }
-
-            }
-            SetNewOutput(current);
+            outputs[0].DefaultValue = newValue;
         }
-    }
 
-    private void SetNewOutput(string newValue)
-    {
-        outputs[0].Value = (_createdOutputs[0] as MathNodeInput).ValueName = newValue;
-        PropagateNewOutput();
-    }
-    
-    private void SetNewOutputIgnorePropagation(string newValue)
-    {
-        outputs[0].Value = (_createdOutputs[0] as MathNodeInput).ValueName = newValue;
+        if (propagate) PropagateNewOutput();
     }
 
     private void PropagateNewOutput()
     {
-        for (int i = 0; i < incomingConnections.Length; i++)
+        for (int i = 0; i < _outgoingConnections.Length; i++)
         {
-            if (incomingConnections[i] != null)
-            {
-                if (incomingConnections[i].InputNode.HasReferenceTo(this)) return;
+            if (_outgoingConnections[i].IsValid == false) continue;
+            if (_outgoingConnections[i].OutputNode.HasReferenceTo(this)) return;
 
-                if (string.IsNullOrEmpty(incomingConnections[i].OutputStruct.Value) == false)
-                    (_createdInputs[i] as MathNodeInput).ValueName = incomingConnections[i].OutputStruct.Value;
-                else
-                    (_createdInputs[i] as MathNodeInput).ValueName = incomingConnections[i].OutputStruct.ValueName;
-            }
-        }
-
-        for (int i = 0; i < outgoingConnections.Length; i++)
-        {
-            if (outgoingConnections[i] != null)
-                outgoingConnections[i].InputNode.CheckNewOutput();
+            _outgoingConnections[i].InputNode.CheckNewOutput();
         }
     }
-    
+  
 
     #region Operations Logic
     private string HandleAdd(string a,string b)
@@ -377,6 +332,10 @@ public class MathNode : NodeBase
                 return null;
         }
     }
+    private string HandleCast(string a)
+    {
+        return null;
+    }
 
     private string IntAdd(string a, string b)
     {
@@ -473,7 +432,7 @@ public class MathNode : NodeBase
 
     private string StringConcat(string a, string b)
     {
-        return a + ' ' + b;
+        return a + b;
     }
     #endregion
 }

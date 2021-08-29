@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: String
   m_EditorClassIdentifier: 
   _type: 3
-  _valueName: string
+  _dataName: string
   _color: {r: 0.65852123, g: 0.85882354, b: 0.39215687, a: 1}
   _secondColor: {r: 0.85882354, g: 0.583128, b: 0.39215687, a: 1}
