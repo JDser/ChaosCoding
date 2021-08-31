@@ -44,6 +44,14 @@ PrefabInstance:
       value: Data
       objectReference: {fileID: 0}
     - target: {fileID: 1984667172377426981, guid: 36a2aa33fe7f15045a33874b44a95c7c, type: 3}
+      propertyPath: deniedClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 39dcbb0cf8e2fd2418b827725047935a, type: 3}
+    - target: {fileID: 1984667172377426981, guid: 36a2aa33fe7f15045a33874b44a95c7c, type: 3}
+      propertyPath: confirmClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 5fe24bcc4e8735e4aa665e6a6bdd5a0d, type: 3}
+    - target: {fileID: 1984667172377426981, guid: 36a2aa33fe7f15045a33874b44a95c7c, type: 3}
       propertyPath: outputs.Array.size
       value: 0
       objectReference: {fileID: 0}

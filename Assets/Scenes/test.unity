@@ -2093,9 +2093,17 @@ PrefabInstance:
       value: End Node
       objectReference: {fileID: 0}
     - target: {fileID: 9010770421217292332, guid: 93a09a55d6b81fe44a87968acc1bcf15, type: 3}
+      propertyPath: failClip
+      value: 
+      objectReference: {fileID: 8300000, guid: f78ed36f8c12c8a4bb4d5ba28142c6ee, type: 3}
+    - target: {fileID: 9010770421217292332, guid: 93a09a55d6b81fe44a87968acc1bcf15, type: 3}
       propertyPath: inputPrefab
       value: 
       objectReference: {fileID: 5458395102597898841, guid: 5335cdf4ab6e1204889fe6d49ad1559e, type: 3}
+    - target: {fileID: 9010770421217292332, guid: 93a09a55d6b81fe44a87968acc1bcf15, type: 3}
+      propertyPath: successClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 3f4e7d5e2ce690342bfd1cb89a54578b, type: 3}
     - target: {fileID: 9010770421217292332, guid: 93a09a55d6b81fe44a87968acc1bcf15, type: 3}
       propertyPath: inputs.Array.size
       value: 1
@@ -2315,7 +2323,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 1
+  m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -2406,7 +2414,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 1
+  m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -2505,7 +2513,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 1
+  m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -3235,9 +3243,17 @@ PrefabInstance:
     m_TransformParent: {fileID: 6234107003363084037}
     m_Modifications:
     - target: {fileID: 1984667172377426981, guid: 36a2aa33fe7f15045a33874b44a95c7c, type: 3}
+      propertyPath: failClip
+      value: 
+      objectReference: {fileID: 8300000, guid: f78ed36f8c12c8a4bb4d5ba28142c6ee, type: 3}
+    - target: {fileID: 1984667172377426981, guid: 36a2aa33fe7f15045a33874b44a95c7c, type: 3}
       propertyPath: inputPrefab
       value: 
       objectReference: {fileID: 5458395102597898841, guid: 5335cdf4ab6e1204889fe6d49ad1559e, type: 3}
+    - target: {fileID: 1984667172377426981, guid: 36a2aa33fe7f15045a33874b44a95c7c, type: 3}
+      propertyPath: successClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 5fe24bcc4e8735e4aa665e6a6bdd5a0d, type: 3}
     - target: {fileID: 1984667172377426981, guid: 36a2aa33fe7f15045a33874b44a95c7c, type: 3}
       propertyPath: outputs.Array.size
       value: 1
@@ -3272,7 +3288,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1984667172377426981, guid: 36a2aa33fe7f15045a33874b44a95c7c, type: 3}
       propertyPath: outputs.Array.data[0]._defaultValue
-      value: Hello
+      value: 'Hello '
       objectReference: {fileID: 0}
     - target: {fileID: 5474619233547677065, guid: 36a2aa33fe7f15045a33874b44a95c7c, type: 3}
       propertyPath: m_Name

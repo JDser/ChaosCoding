@@ -36,6 +36,18 @@ PrefabInstance:
       value: Divide
       objectReference: {fileID: 0}
     - target: {fileID: 304651674587393296, guid: 6eda1fe2a68832c43852cb9e54b48fc8, type: 3}
+      propertyPath: deniedClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 39dcbb0cf8e2fd2418b827725047935a, type: 3}
+    - target: {fileID: 304651674587393296, guid: 6eda1fe2a68832c43852cb9e54b48fc8, type: 3}
+      propertyPath: confirmClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 5fe24bcc4e8735e4aa665e6a6bdd5a0d, type: 3}
+    - target: {fileID: 304651674587393296, guid: 6eda1fe2a68832c43852cb9e54b48fc8, type: 3}
+      propertyPath: inputPrefab
+      value: 
+      objectReference: {fileID: 5458395102597898841, guid: 5335cdf4ab6e1204889fe6d49ad1559e, type: 3}
+    - target: {fileID: 304651674587393296, guid: 6eda1fe2a68832c43852cb9e54b48fc8, type: 3}
       propertyPath: mathOperation
       value: 3
       objectReference: {fileID: 0}

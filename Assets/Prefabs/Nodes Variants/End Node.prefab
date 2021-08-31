@@ -14,8 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nodeName: End
   color: {r: 0.8862745, g: 0.37254903, b: 0.37254903, a: 1}
-  inputs: []
-  outputs: []
   text_nodeName: {fileID: 6937235942738820796}
   nodeNameBackground: {fileID: 7954179304048595939}
   container_inputs: {fileID: 2924464532380127194}
@@ -23,7 +21,10 @@ MonoBehaviour:
   minMaxRotation: {x: -10, y: 10}
   rotationSpeed: 1.5
   inputPrefab: {fileID: 5458395102597898841, guid: 5335cdf4ab6e1204889fe6d49ad1559e, type: 3}
-  clip: {fileID: 8300000, guid: 5fe24bcc4e8735e4aa665e6a6bdd5a0d, type: 3}
+  confirmClip: {fileID: 8300000, guid: 292949eac48c58a43b57a7d9246b4371, type: 3}
+  deniedClip: {fileID: 8300000, guid: 39dcbb0cf8e2fd2418b827725047935a, type: 3}
+  inputs: []
+  outputs: []
 --- !u!1001 &7667377436981239410
 PrefabInstance:
   m_ObjectHideFlags: 0

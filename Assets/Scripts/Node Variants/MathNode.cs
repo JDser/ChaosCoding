@@ -61,7 +61,7 @@ public class MathNode : NodeBase
         {
             if (_outgoingConnections[i].IsValid == false)
             {
-                LevelManager.PlaySound(failClip);
+                LevelManager.PlaySound(deniedClip);
                 StartCoroutine(FailRoutine());
 
                 return;
@@ -70,7 +70,7 @@ public class MathNode : NodeBase
             lineAnims[i].StartAnimation();
         }
 
-        LevelManager.PlaySound(successClip);
+        LevelManager.PlaySound(confirmClip);
         StartCoroutine(ShakeAnimationRoutine());
     }
 
@@ -106,52 +106,6 @@ public class MathNode : NodeBase
         CheckNewOutput();
     }
     #endregion
-
-    //private void ResetConnection()
-    //{
-    //    for (int i = 0; i < _incomingConnections.Length; i++)
-    //    {
-    //        if (_incomingConnections[i].IsValid == false)
-    //            return;
-    //    }
-    //    for (int i = 0; i < _outgoingConnections.Length; i++)
-    //    {
-    //        if (_outgoingConnections[i].IsValid == false)
-    //            return;
-    //    }
-    //
-    //
-    //    if (originData.IsValid == false)
-    //    {
-    //        for (int i = 0; i < _incomingConnections.Length; i++)
-    //        {
-    //                _incomingConnections[i].NodeInputBase.Value = inputs[i].DataName;
-    //        }
-    //        for (int i = 0; i < _outgoingConnections.Length; i++)
-    //        {
-    //                _outgoingConnections[i].NodeOutputBase.Value = outputs[i].DataName;
-    //        }
-    //        return;
-    //    }
-    //    else
-    //        ChangeDataType(originData);
-    //}
-    //
-    //public void ChangeDataType(InputData type)
-    //{
-    //    currentType = type.Type;
-    //
-    //    for (int i = 0; i < _incomingConnections.Length; i++)
-    //    {
-    //            _incomingConnections[i].NodeInputBase.ChangeInputType(type);
-    //    }
-    //    for (int i = 0; i < _outgoingConnections.Length; i++)
-    //    {
-    //            _outgoingConnections[i].NodeInputBase.ChangeInputType(type);
-    //    }
-    //}
-
-
 
     public override void CheckNewOutput()
     {
@@ -201,10 +155,8 @@ public class MathNode : NodeBase
         SetNewOutput(current);
     }
 
-    private void SetNewOutput(string newValue, bool propagate = true)
+    private void SetNewOutput(string newValue)
     {
-        Debug.Log(newValue);
-
         if (string.IsNullOrEmpty(newValue))
         {
             _outgoingConnections[0].NodeOutputBase.Name = originData.DataName;
@@ -212,15 +164,14 @@ public class MathNode : NodeBase
         }
         else
         {
-            //outputs[0].DefaultValue = _outgoingConnections[0].NodeOutputBase.Name = newValue;
-
-            // BUG HERE
-            //_outgoingConnections[index].NodeOutputBase.Name = newValue;
-
-            outputs[0].DefaultValue = newValue;
+            for (int i = 0; i < _outgoingConnections.Length; i++)
+            {
+                outputs[i].DefaultValue = newValue;
+                _outgoingConnections[i].NodeOutputBase.Name = newValue;
+            }
         }
 
-        if (propagate) PropagateNewOutput();
+        PropagateNewOutput();
     }
 
     private void PropagateNewOutput()
@@ -228,7 +179,6 @@ public class MathNode : NodeBase
         for (int i = 0; i < _outgoingConnections.Length; i++)
         {
             if (_outgoingConnections[i].IsValid == false) continue;
-            if (_outgoingConnections[i].OutputNode.HasReferenceTo(this)) return;
 
             _outgoingConnections[i].InputNode.CheckNewOutput();
         }

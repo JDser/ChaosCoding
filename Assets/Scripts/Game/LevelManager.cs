@@ -3,8 +3,12 @@ using UnityEngine.UI;
 
 public class LevelManager : MonoBehaviour
 {
-    #region Static Vrappers
-    public static LevelManager Instance { get; private set; }
+    #region Static Wrappers
+    public static LevelManager Instance 
+    {
+        get;
+        private set;
+    }
     public static void PlaySound(AudioClip clip)
     {
         Instance.source.PlayOneShot(clip);
@@ -57,6 +61,10 @@ public class LevelManager : MonoBehaviour
     private void Start()
     {
         RenderCamera = GameManager.RenderCamera;
+        for (int i = 0; i < canvases.Length; i++)
+        {
+            canvases[i].GetComponent<CanvasScaler>().referenceResolution = GameManager.ScreenResolution;
+        }
     }
 
 

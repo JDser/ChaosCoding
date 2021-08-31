@@ -23,6 +23,14 @@ public class GameManager : MonoBehaviour
     {
         get => Instance.cam;
     }
+
+    public static Vector2 ScreenResolution
+    {
+        get
+        {
+            return new Vector2(Screen.currentResolution.width , Screen.currentResolution.height);
+        }
+    }
     #endregion
 
     #region Variables
@@ -39,6 +47,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] AudioClip musicLoop;
     [SerializeField] AudioClip loadingAudio;
 
+    [Header("Sources")]
     [SerializeField] AudioSource musicLoopSource;
     [SerializeField] AudioSource source;
 

@@ -106,6 +106,24 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
+      time: 0.21
+      value: 0.049987793
+      inSlope: 1.0076563
+      outSlope: 1.0076563
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.7
+      value: 0.92085284
+      inSlope: 1.0205498
+      outSlope: 1.0205498
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
       time: 1
       value: 1
       inSlope: 0
@@ -216,7 +234,7 @@ PrefabInstance:
       objectReference: {fileID: 7680323780457118520}
     - target: {fileID: 4557130744937130664, guid: 943bafa354a032a44b51b4d62a8e4323, type: 3}
       propertyPath: m_Name
-      value: NodeInput Variant
+      value: AnimNodeInput
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 3598421132637507506, guid: 943bafa354a032a44b51b4d62a8e4323, type: 3}

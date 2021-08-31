@@ -20,13 +20,14 @@ MonoBehaviour:
   container_outputs: {fileID: 7728290395534565083}
   minMaxRotation: {x: -10, y: 10}
   rotationSpeed: 1.5
-  inputPrefab: {fileID: 7377548972664160511, guid: af1de307e50eb4c4a8d54e2b165368ba, type: 3}
-  clip: {fileID: 8300000, guid: 292949eac48c58a43b57a7d9246b4371, type: 3}
+  inputPrefab: {fileID: 5458395102597898841, guid: 5335cdf4ab6e1204889fe6d49ad1559e, type: 3}
+  confirmClip: {fileID: 8300000, guid: 5fe24bcc4e8735e4aa665e6a6bdd5a0d, type: 3}
+  deniedClip: {fileID: 8300000, guid: 39dcbb0cf8e2fd2418b827725047935a, type: 3}
   inputs: []
   outputs: []
-  originVar:
+  originData:
     _prefab: {fileID: 0}
-    _value: 
+    _defaultValue: 
   mathOperation: 0
 --- !u!1001 &391074022694247951
 PrefabInstance:

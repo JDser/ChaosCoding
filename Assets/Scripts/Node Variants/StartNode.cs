@@ -36,7 +36,7 @@ public class StartNode : NodeBase
         {
             if (_outgoingConnections[i].IsValid == false)
             {
-                LevelManager.PlaySound(failClip);
+                LevelManager.PlaySound(deniedClip);
                 StartCoroutine(FailRoutine());
 
                 return;
@@ -45,7 +45,7 @@ public class StartNode : NodeBase
             lineAnims[i].StartAnimation();
         }
 
-        LevelManager.PlaySound(successClip);
+        LevelManager.PlaySound(confirmClip);
         StartCoroutine(ShakeAnimationRoutine());
     }
 

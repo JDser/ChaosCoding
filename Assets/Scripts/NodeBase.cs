@@ -115,8 +115,8 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
     [SerializeField] NodeInputBase inputPrefab;
 
     [Header("Audio")]
-    [SerializeField] protected AudioClip successClip;  
-    [SerializeField] protected AudioClip failClip;  
+    [SerializeField] protected AudioClip confirmClip;  
+    [SerializeField] protected AudioClip deniedClip;  
     
     [Header("Inputs & Outputs")]
     [SerializeField] protected InputData[] inputs;
