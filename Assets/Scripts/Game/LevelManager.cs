@@ -9,6 +9,7 @@ public class LevelManager : MonoBehaviour
         get;
         private set;
     }
+
     public static void PlaySound(AudioClip clip)
     {
         Instance.source.PlayOneShot(clip);
@@ -17,14 +18,21 @@ public class LevelManager : MonoBehaviour
 
     #region Variables
     [Header("Nodes")]
-    [SerializeField] StartNode startNode;
-    [SerializeField] EndNode endNode;
+    [SerializeField] protected StartNode startNode;
+    [SerializeField] protected EndNode endNode;
 
+    [Header("Data")]
+    [SerializeField] protected InputData startData;
+    [SerializeField] protected InputData endData;
+
+    #region NonSerialized
     AudioSource source;
 
-    Canvas[] canvases;
+    protected Canvas[] canvases;
     GraphicRaycaster[] raycasters;
+    #endregion
 
+    #region Properties
     public Camera RenderCamera
     {
         set
@@ -48,27 +56,37 @@ public class LevelManager : MonoBehaviour
     }
     #endregion
 
-    private void Awake()
+    #endregion
+
+    protected virtual void Awake()
     {
         Instance = this;
         source = GetComponent<AudioSource>();
-
+    
         endNode.OnCheckEnd += OnCheckEnd;
-
+    
         canvases = GetComponentsInChildren<Canvas>();
         raycasters = GetComponentsInChildren<GraphicRaycaster>();
+
     }
-    private void Start()
+
+    protected virtual void Start()
     {
         RenderCamera = GameManager.RenderCamera;
         for (int i = 0; i < canvases.Length; i++)
         {
             canvases[i].GetComponent<CanvasScaler>().referenceResolution = GameManager.ScreenResolution;
         }
+
+        startNode.SetNewOutput(0, startData);
+        endNode.SetNewInput(0, endData);
+
+        startNode.SetupNode();
+        endNode.SetupNode();
     }
 
 
-    private void OnCheckEnd(bool result)
+    protected virtual void OnCheckEnd(bool result)
     {
         if (result)
         {

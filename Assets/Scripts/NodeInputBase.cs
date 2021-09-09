@@ -3,12 +3,17 @@ using UnityEngine.EventSystems;
 using TMPro;
 using UnityEngine.UI;
 
-public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHandler, IEndDragHandler, IDragHandler
+public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHandler, IEndDragHandler, IDragHandler , IPointerEnterHandler,IPointerExitHandler
 {
+    #region Static Wrappers
+    static NodeInputBase CurrentNode;
+    static UILineRenderer CurrentLine;
+    #endregion
+
     #region Variables
     [SerializeField] protected Image image;
     [SerializeField] protected TextMeshProUGUI text_Type;
-    [SerializeField] protected UILineRenderer lineRenderer;
+    [SerializeField] protected UILineRenderer _lineRenderer;
 
     [Header("Sounds")]
     [SerializeField] protected AudioClip beginDragClip;
@@ -46,9 +51,9 @@ public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHan
         set
         {
             _isOutput = value;
-            lineRenderer.enabled = value;
+            _lineRenderer.enabled = value;
 
-            lineRenderer.rectTransform.anchoredPosition = new Vector2(value ? 15 : -15, 0);
+            _lineRenderer.rectTransform.anchoredPosition = new Vector2(value ? 15 : -15, 0);
 
             Vector2 position = new Vector2(value ? -55 : 55, 0);
             text_Type.rectTransform.anchoredPosition = position;
@@ -64,14 +69,11 @@ public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHan
     }
     public UILineRenderer LineRenderer
     {
-        get => lineRenderer;
+        get => _lineRenderer;
     }  
     public string Name
     {
-        set
-        {
-            text_Type.text = value;
-        }
+        set => text_Type.text = value;   
     }
     #endregion
 
@@ -89,38 +91,33 @@ public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHan
     {
         _inputType = type;
 
-        lineRenderer.color = _inputType.Color;
+        _lineRenderer.color = _inputType.Color;
         image.color = _inputType.Color;
     }
 
     public virtual void Clear()
     {
         _parentNode.ClearOutgoingConnection(_nodeIndex);
-        lineRenderer.Clear();    
+        _lineRenderer.Clear();    
     }
 
     public virtual void ConnectNode(NodeInputBase inputNode)
     {
         if (_inputType.Type != inputNode.InputType.Type)
         {
-            lineRenderer.End = Vector2.zero;
+            _lineRenderer.End = Vector2.zero;
             LevelManager.PlaySound(connectFailedClip);
             return;
         }
 
         if (inputNode.ParentNode.HasReferenceTo(_parentNode))
         {
-            lineRenderer.End = Vector2.zero;
+            _lineRenderer.End = Vector2.zero;
             LevelManager.PlaySound(connectFailedClip);
             return;
         }
 
-        lineRenderer.Target = inputNode.LineRenderer.rectTransform;
-
-
         _parentNode.AddOutputConnection(inputNode._parentNode, inputNode._nodeIndex, _nodeIndex);
-        inputNode._parentNode.AddInputConnection(_parentNode, inputNode._nodeIndex,_nodeIndex);
-
 
         LevelManager.PlaySound(connectSuccessClip);
     }
@@ -132,6 +129,9 @@ public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHan
 
         Clear();
 
+        CurrentNode = this;
+        CurrentLine = _lineRenderer;
+
         group.blocksRaycasts = false;
         LevelManager.PlaySound(beginDragClip);
     }
@@ -140,20 +140,16 @@ public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHan
         if (!_isOutput) return;
 
         Vector2 screenPoint = Input.mousePosition;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(lineRenderer.rectTransform, screenPoint, lineRenderer.Camera, out Vector2 local);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(_lineRenderer.rectTransform, screenPoint, _lineRenderer.Camera, out Vector2 local);
 
-        lineRenderer.End = local;
+        _lineRenderer.End = local;
     }
     public virtual void OnDrop(PointerEventData eventData)
     {
         if (_isOutput) return;
 
-        if (eventData.pointerDrag == null)
-            return;
-
-        NodeInputBase original = eventData.pointerDrag.GetComponent<NodeInputBase>(); // first selected nodeInput
-        if (original.ParentNode == _parentNode) return;
-        original.ConnectNode(this);
+        if (CurrentNode && CurrentNode.ParentNode != _parentNode)
+            CurrentNode.ConnectNode(this);
     }
     public virtual void OnEndDrag(PointerEventData eventData)
     {
@@ -161,11 +157,30 @@ public abstract class NodeInputBase : MonoBehaviour, IDropHandler, IBeginDragHan
 
         group.blocksRaycasts = true;
 
-        if (lineRenderer.Target == null)
+        if (_lineRenderer.Target == null)
         {
-            lineRenderer.End = Vector2.zero;
+            _lineRenderer.End = Vector2.zero;
             LevelManager.PlaySound(connectFailedClip);
         }
+
+        CurrentNode = null;
+        CurrentLine = null;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (_isOutput) return;
+
+        if (CurrentLine)
+            CurrentLine.Target = this._lineRenderer.rectTransform;
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (_isOutput) return;
+
+        if (CurrentLine)
+            CurrentLine.Target = null;
     }
     #endregion
 }

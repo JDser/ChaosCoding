@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7939064301324878036}
   - component: {fileID: 7982722240793138513}
   m_Layer: 5
-  m_Name: Outputs
+  m_Name: Group_Outputs
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -282,7 +282,7 @@ GameObject:
   - component: {fileID: 4823979554414760360}
   - component: {fileID: 6247558328850239385}
   m_Layer: 5
-  m_Name: Inputs
+  m_Name: Group_Inputs
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

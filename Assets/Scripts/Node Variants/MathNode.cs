@@ -3,6 +3,7 @@ using System.Collections;
 
 public class MathNode : NodeBase
 {
+    #region Variables
     [Header("Custom")]
     [SerializeField] InputData originData;
     [SerializeField] MathOperation mathOperation;
@@ -11,26 +12,19 @@ public class MathNode : NodeBase
 
     DataType currentType;
 
-    public int ValidIncomes
+    public InputData OriginData
     {
-        get
-        {
-            int validIncomes = 0;
-            for (int i = 0; i < _incomingConnections.Length; i++)
-            {
-                if (_incomingConnections[i].IsValid)
-                    validIncomes++;
-            }
-            return validIncomes;
-        }
+        get => originData;
+        set => originData = value;
     }
+    #endregion
 
-    protected override void Awake()
+    public override void SetupNode()
     {
-        base.Awake();
+        base.SetupNode();
         SetupLineAnimators();
     }
-   
+
     private void SetupLineAnimators()
     {
         lineAnims = new UILineAnimation[_outgoingConnections.Length];
@@ -67,7 +61,8 @@ public class MathNode : NodeBase
                 return;
             }
 
-            lineAnims[i].StartAnimation();
+            //lineAnims[i].StartAnimation();
+            lineAnims[i].Animate = true;
         }
 
         LevelManager.PlaySound(confirmClip);
@@ -76,11 +71,23 @@ public class MathNode : NodeBase
 
 
     #region Connection Managment
-    public override void AddInputConnection(NodeBase inputNode, int thisInputIndex, int otherOutputIndex)
+    protected override void AddInputConnection(NodeBase inputNode, int thisInputIndex, int otherOutputIndex)
     {
         base.AddInputConnection(inputNode, thisInputIndex, otherOutputIndex);
 
         NodeConnection current = _incomingConnections[thisInputIndex];
+
+
+        if (string.IsNullOrEmpty(current.OutputStruct.DefaultValue))
+        {
+            current.NodeInputBase.Name = current.OutputStruct.DataName;
+            inputs[thisInputIndex].DefaultValue = null;
+        }
+        else
+        {
+            current.NodeInputBase.Name = current.OutputStruct.DefaultValue;
+            inputs[thisInputIndex].DefaultValue = current.OutputStruct.DefaultValue;
+        }
 
         currentType = current.OutputStruct.Type;
         CheckNewOutput();
@@ -102,7 +109,6 @@ public class MathNode : NodeBase
         }
 
         currentType = originData.Type;
-
         CheckNewOutput();
     }
     #endregion

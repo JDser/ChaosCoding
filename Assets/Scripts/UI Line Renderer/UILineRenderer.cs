@@ -9,7 +9,8 @@ public class UILineRenderer : Graphic
     [SerializeField, Range(0, 100)] int steps;
     [SerializeField] float thickness;
 
-    [SerializeField] protected AnimationCurve curve;
+    [SerializeField] protected AnimationCurve verticalCurve;
+    [SerializeField] protected AnimationCurve horizontalCurve;
 
     protected RectTransform _target;
 
@@ -46,7 +47,7 @@ public class UILineRenderer : Graphic
 
     protected virtual void Update()
     {
-        SetAllDirty();
+       SetAllDirty();
     }
 
     public virtual void Clear()
@@ -69,13 +70,26 @@ public class UILineRenderer : Graphic
 
         points = new Vector2[steps];
 
+        float xDiff = end.x;
         float yDiff = end.y;
+
         for (int i = 1; i < points.Length; i++)
         {
-            float stepNormalize = Normalize(i+1, 0, steps);
-            points[i].x = Mathf.Lerp(0, end.x, stepNormalize);
-    
-            points[i].y = yDiff * curve.Evaluate(stepNormalize);
+            if (xDiff < rectTransform.anchoredPosition.x)
+            {
+                float stepNormalize = Normalize(i + 1, 0, steps);
+
+                points[i].x = Mathf.Lerp(0, end.x, stepNormalize) * horizontalCurve.Evaluate(stepNormalize);
+                points[i].y = yDiff * verticalCurve.Evaluate(stepNormalize);
+            }
+            else
+            {
+                float stepNormalize = Normalize(i + 1, 0, steps);
+
+                points[i].x = Mathf.Lerp(0, end.x, stepNormalize);
+                points[i].y = yDiff * verticalCurve.Evaluate(stepNormalize);
+            }
+
         }
 
         width = rectTransform.rect.width;

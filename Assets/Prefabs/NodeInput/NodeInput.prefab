@@ -75,7 +75,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   image: {fileID: 7876520882740445375}
   text_Type: {fileID: 953702571411809311}
-  lineRenderer: {fileID: 3598421132637507506}
+  _lineRenderer: {fileID: 3598421132637507506}
   beginDragClip: {fileID: 8300000, guid: e1aea682e22060c4d9762c24a4d69a49, type: 3}
   connectSuccessClip: {fileID: 8300000, guid: 3f4e7d5e2ce690342bfd1cb89a54578b, type: 3}
   connectFailedClip: {fileID: 8300000, guid: f78ed36f8c12c8a4bb4d5ba28142c6ee, type: 3}
@@ -270,7 +270,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: 69d174e257f7ee243ac7cf614536a292, type: 2}
+  m_Material: {fileID: 2100000, guid: 169db39c02d04e347bb7d3c9fa474496, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -351,44 +351,41 @@ MonoBehaviour:
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   steps: 50
   thickness: 12
-  curve:
+  verticalCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  horizontalCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: -2.1919026
+      outSlope: -2.1919026
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0
+      outWeight: 0.11607654
     - serializedVersion: 3
-      time: 0.21
-      value: 0.049987793
-      inSlope: 1.0076563
-      outSlope: 1.0076563
-      tangentMode: 34
+      time: 0.5065983
+      value: 0.5098969
+      inSlope: 3.6621199
+      outSlope: 3.6621199
+      tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.7
-      value: 0.92085284
-      inSlope: 1.0205498
-      outSlope: 1.0205498
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
+      outWeight: 0.08091018
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 0
-      outSlope: 0
+      inSlope: -2.0196574
+      outSlope: -2.0196574
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0
+      inWeight: 0.13780585
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2

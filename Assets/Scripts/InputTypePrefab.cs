@@ -25,7 +25,7 @@ public class InputData
     [SerializeField] InputTypePrefab _prefab;
     [SerializeField] string _defaultValue;
 
-
+    #region Properties
     public string DataName
     {
         get => _prefab.DataName;
@@ -51,6 +51,14 @@ public class InputData
     {
         get => _prefab != null;
     }
+    #endregion
+
+    public InputData(string __value,InputTypePrefab type)
+    {
+        _defaultValue = __value;
+        _prefab = type;
+    }
+
 }
 
 [CreateAssetMenu(fileName = "New Input Type Prefab")]

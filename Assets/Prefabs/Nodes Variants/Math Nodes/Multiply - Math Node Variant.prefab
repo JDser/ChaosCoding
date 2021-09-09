@@ -8,12 +8,28 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 101413492436423582, guid: 6eda1fe2a68832c43852cb9e54b48fc8, type: 3}
+      propertyPath: m_Color.b
+      value: 0.97900003
+      objectReference: {fileID: 0}
+    - target: {fileID: 101413492436423582, guid: 6eda1fe2a68832c43852cb9e54b48fc8, type: 3}
       propertyPath: m_Color.g
-      value: 0.44606954
+      value: 0.52748066
+      objectReference: {fileID: 0}
+    - target: {fileID: 101413492436423582, guid: 6eda1fe2a68832c43852cb9e54b48fc8, type: 3}
+      propertyPath: m_Color.r
+      value: 0.354398
+      objectReference: {fileID: 0}
+    - target: {fileID: 304651674587393296, guid: 6eda1fe2a68832c43852cb9e54b48fc8, type: 3}
+      propertyPath: color.b
+      value: 0.97900003
       objectReference: {fileID: 0}
     - target: {fileID: 304651674587393296, guid: 6eda1fe2a68832c43852cb9e54b48fc8, type: 3}
       propertyPath: color.g
-      value: 0.44606954
+      value: 0.52748066
+      objectReference: {fileID: 0}
+    - target: {fileID: 304651674587393296, guid: 6eda1fe2a68832c43852cb9e54b48fc8, type: 3}
+      propertyPath: color.r
+      value: 0.354398
       objectReference: {fileID: 0}
     - target: {fileID: 304651674587393296, guid: 6eda1fe2a68832c43852cb9e54b48fc8, type: 3}
       propertyPath: nodeName

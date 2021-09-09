@@ -139,15 +139,6 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
     Vector3 newRotation;
     #endregion
 
-    public NodeConnection[] IncomingConnections
-    {
-        get => _incomingConnections;
-    }
-    public NodeConnection[] OutgoingConnections
-    {
-        get => _outgoingConnections;
-    }
-    
     #endregion
 
     #region BuiltIn Methods
@@ -155,9 +146,12 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
     {
         dragRectTransform = transform.GetComponent<RectTransform>();
         canvas = GetComponentInParent<Canvas>();
-
-        SetupNode();
     }
+
+    //protected virtual void Start()
+    //{
+    //    SetupNode();
+    //}
 
     #if UNITY_EDITOR
     protected void OnValidate()
@@ -179,7 +173,7 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
     }
     #endregion
 
-    protected void SetupNode()
+    public virtual void SetupNode()
     {
         text_nodeName.text = nodeName;
         nodeNameBackground.color = color;
@@ -229,9 +223,21 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
         #endregion
     }
 
-    public abstract void Enact();
+    public void SetNewOutput(int index, InputData newData)
+    {
+        if (index >= outputs.Length) 
+            System.Array.Resize(ref outputs, index + 1);
 
-    public abstract void CheckNewOutput();
+        outputs[index] = newData;
+    }
+
+    public void SetNewInput(int index, InputData newData)
+    {
+        if (index >= inputs.Length)
+            System.Array.Resize(ref inputs, index + 1);
+
+        inputs[index] = newData;
+    }
 
     public bool HasReferenceTo(NodeBase reference)
     {
@@ -239,7 +245,7 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
 
         for (int i = 0; i < _outgoingConnections.Length; i++)
         {
-            if (_outgoingConnections[i].IsValid == false) 
+            if (_outgoingConnections[i].IsValid == false)
                 continue;
 
             if (_outgoingConnections[i].InputNode == reference)
@@ -250,6 +256,11 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
 
         return hasReference;
     }
+
+    public abstract void Enact();
+
+    public abstract void CheckNewOutput();
+
 
     #region Connection Managment
     public virtual void AddOutputConnection(NodeBase inputNode, int otherInputIndex, int thisOutputIndex)
@@ -264,8 +275,10 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
             inputNode.inputs[otherInputIndex],
             inputNode._incomingConnections[otherInputIndex].NodeInputBase, 
             otherInputIndex);
+
+        inputNode.AddInputConnection(this, otherInputIndex, thisOutputIndex);
     }
-    public virtual void AddInputConnection(NodeBase inputNode, int thisInputIndex, int otherOutputIndex)
+    protected virtual void AddInputConnection(NodeBase inputNode, int thisInputIndex, int otherOutputIndex)
     {
         if (_incomingConnections[thisInputIndex].IsValid)
         {
@@ -279,6 +292,7 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
             inputNode._outgoingConnections[otherOutputIndex].NodeOutputBase,
             otherOutputIndex);
     }
+   
     public virtual void ClearOutgoingConnection(int connectionIndex)
     {
         if (_outgoingConnections[connectionIndex].IsValid == false) return;
@@ -287,7 +301,7 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
         _outgoingConnections[connectionIndex].ClearInput();
     } 
     
-    public virtual void ClearOutgoingConnectionIgnore(int connectionIndex)
+    protected virtual void ClearOutgoingConnectionIgnore(int connectionIndex)
     {
         if (_outgoingConnections[connectionIndex].IsValid == false) return;
 

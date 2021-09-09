@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -31,12 +32,30 @@ public class GameManager : MonoBehaviour
             return new Vector2(Screen.currentResolution.width , Screen.currentResolution.height);
         }
     }
+
+
+    public static MovablePoint GetPoint()
+    {
+        return MovablePoints.Dequeue();
+    }
+    public static void ReturnPoint(MovablePoint m)
+    {
+        m.transform.SetParent(Instance.poolRoot);
+        MovablePoints.Enqueue(m);
+    }
+
+    public static Queue<MovablePoint> MovablePoints;
     #endregion
 
     #region Variables
     [Header("References")]
     [SerializeField] Camera cam;
     [SerializeField] RectTransform container_loadingScreen;
+
+    [Header("Movable Points")]
+    [SerializeField] int pointsCount = 1000;
+    [SerializeField] MovablePoint pointPrefab;
+    [SerializeField] Transform poolRoot;
 
     [Header("Animation")]
     [SerializeField] float animationSpeed;
@@ -65,6 +84,8 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            PoolPoints();
         }
         else
         {
@@ -79,6 +100,17 @@ public class GameManager : MonoBehaviour
         musicLoopSource.loop = true;
         musicLoopSource.clip = musicLoop;
         musicLoopSource.Play();
+    }
+
+    private void PoolPoints()
+    {
+        MovablePoints = new Queue<MovablePoint>();
+
+        for (int i = 0; i < pointsCount; i++)
+        {
+            MovablePoint _m = Instantiate(pointPrefab, poolRoot);
+            MovablePoints.Enqueue(_m);   
+        }
     }
 
     private void Load(int index)

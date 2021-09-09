@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nodeName: Start
-  color: {r: 0.4509804, g: 0.49411765, b: 0.7294118, a: 1}
+  color: {r: 0.47767642, g: 0.7294118, b: 0.3260471, a: 1}
   text_nodeName: {fileID: 1678452790340563134}
   nodeNameBackground: {fileID: 1832937909097029089}
   container_inputs: {fileID: 6888471414928097752}
@@ -34,15 +34,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 289660603810188689, guid: 8bd4991d4dae53a409af7dd7a23f4d26, type: 3}
       propertyPath: m_Color.b
-      value: 0.7294118
+      value: 0.3260471
       objectReference: {fileID: 0}
     - target: {fileID: 289660603810188689, guid: 8bd4991d4dae53a409af7dd7a23f4d26, type: 3}
       propertyPath: m_Color.g
-      value: 0.49411765
+      value: 0.7294118
       objectReference: {fileID: 0}
     - target: {fileID: 289660603810188689, guid: 8bd4991d4dae53a409af7dd7a23f4d26, type: 3}
       propertyPath: m_Color.r
-      value: 0.4509804
+      value: 0.47767642
       objectReference: {fileID: 0}
     - target: {fileID: 730142183047848142, guid: 8bd4991d4dae53a409af7dd7a23f4d26, type: 3}
       propertyPath: m_text

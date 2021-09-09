@@ -5,10 +5,9 @@ public class StartNode : NodeBase
 {
     UILineAnimation[] lineAnims;
 
-    protected override void Awake()
+    public override void SetupNode()
     {
-        base.Awake();
-
+        base.SetupNode();
         SetupLineAnimators();
     }
 
@@ -42,7 +41,9 @@ public class StartNode : NodeBase
                 return;
             }
 
-            lineAnims[i].StartAnimation();
+            //lineAnims[i].StartAnimation();
+            lineAnims[i].Animate = true;
+
         }
 
         LevelManager.PlaySound(confirmClip);
