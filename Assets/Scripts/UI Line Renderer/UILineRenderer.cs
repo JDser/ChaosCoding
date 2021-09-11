@@ -60,13 +60,12 @@ public class UILineRenderer : Graphic
     {
         vh.Clear();
 
-        Vector2 local;
         if (_target != null)
         {
             Vector2 screenPoint = cam.WorldToScreenPoint(_target.position);
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, screenPoint, cam, out local);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, screenPoint, cam, out Vector2 local);
             end = local;
-        }    
+        }
 
         points = new Vector2[steps];
 

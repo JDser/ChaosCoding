@@ -17,6 +17,10 @@ public class LevelManager : MonoBehaviour
     #endregion
 
     #region Variables
+    [Header("UI")]
+    [SerializeField] GameObject startButton;
+    [SerializeField] GameObject stopButton;
+
     [Header("Nodes")]
     [SerializeField] protected StartNode startNode;
     [SerializeField] protected EndNode endNode;
@@ -98,7 +102,20 @@ public class LevelManager : MonoBehaviour
     #region UI Buttons
     public void StartSimulation()
     {
+        raycasters[1].enabled = false;
+
         startNode.Enact();
+        startButton.SetActive(false);
+        stopButton.SetActive(true);
+    }
+
+    public void StopSimulation()
+    {
+        raycasters[1].enabled = true;
+
+        startNode.Stop();
+        startButton.SetActive(true);
+        stopButton.SetActive(false);
     }
 
     public void Reload()

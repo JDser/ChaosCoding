@@ -93,6 +93,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  frequency: 3
   moveSpeed: 1
 --- !u!1001 &5846967757183556368
 PrefabInstance:

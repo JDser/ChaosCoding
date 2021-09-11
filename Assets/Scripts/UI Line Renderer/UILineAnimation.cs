@@ -1,7 +1,35 @@
-using UnityEngine;
-using UnityEngine.UI;
-using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
+
+struct PointProgress
+{
+    public MovablePoint Point
+    {
+        get;
+        private set;
+    }
+    public float Progress
+    {
+        get;
+        set;
+    }
+    public bool IsDone
+    {
+        get => Progress >= 1f;
+    }
+
+    public PointProgress(MovablePoint m)
+    {
+        Point = m;
+        Progress = 0;
+    }
+
+    public PointProgress(MovablePoint m, float currentProgress)
+    {
+        Point = m;
+        Progress = currentProgress;
+    }
+}
 
 public class UILineAnimation : UILineRenderer
 {
@@ -10,15 +38,39 @@ public class UILineAnimation : UILineRenderer
     [SerializeField] float frequency;
     [SerializeField] float moveSpeed;
 
-    Vector3 desiredPosition;
+    Queue<PointProgress> movablePoints;
+    List<PointProgress> ActiveMovablePoints;
 
-    List<MovablePoint> movablePoints;
-
+    #region NonSerialized
     float _nextTime = 0f;
 
+    bool _isAnimating = false;
+
+    bool _startEventTriggered = false;
+    bool _endEventTriggered = false;
+
+    bool _onFirstPointArrive = false;
+    bool _onLastPointArrive = false;
+
+    float xDiff, yDiff;
+    float currentProgress;
+    Vector3 pos;
+
+    #endregion
+
+    #region Events
     public delegate void AnimationHandler();
+    public event AnimationHandler OnAnimationStart; 
     public event AnimationHandler OnAnimationEnd;
 
+    public event AnimationHandler OnFirstPoint;
+    public event AnimationHandler OnLastPoint;
+    #endregion
+
+    #region Properties
+    /// <summary>
+    ///  NO USE!
+    /// </summary>
     public Color SecondColor 
     { 
         set 
@@ -28,83 +80,187 @@ public class UILineAnimation : UILineRenderer
     }
     public bool Animate
     {
-        get;
-        set;
+        get => _isAnimating;
+        set => _isAnimating = value;
     }
     #endregion
 
+    #endregion
+
     #region BuiltIn Methods
-    protected override void Awake()
-    {
-        base.Awake();
-
-        movablePoints = new List<MovablePoint>();
-
-        for (int i = 0; i < frequency; i++)
-        {
-            movablePoints.Add(GameManager.GetPoint());
-        }
-
-    }
-
     protected override void Update()
     {
         base.Update();
-
-        if (Animate)
-        {
-            if(Time.time > _nextTime)
-            {
-                _nextTime = Time.time + (1/frequency);
-                for (int i = 0; i < movablePoints.Count; i++)
-                {
-                   // movablePoints[i].Position = points[0];
-                }
-            }
-
-
-        }
-
+        Animation();
     }
+
 
     protected override void OnDestroy()
     {
-        foreach (MovablePoint _m in movablePoints)
-        {
-            GameManager.ReturnPoint(_m);
-        }
-
         base.OnDestroy();
         StopAllCoroutines();
     }
     #endregion
 
-    //public void StartAnimation()
-    //{
-    //    rect_Image.gameObject.SetActive(true);
-    //
-    //    StartCoroutine(MoveRectRoutine());
-    //}
-    //
-    //IEnumerator MoveRectRoutine()
-    //{
-    //    float _progress = 0;
-    //
-    //    while (_progress<1f)
-    //    {        
-    //        float stepNormalize = Normalize(_progress, 0, 1);
-    //        desiredPosition.x = Mathf.Lerp(0, end.x, stepNormalize);
-    //
-    //        //desiredPosition.y = end.y * curve.Evaluate(stepNormalize);
-    //
-    //        rect_Image.anchoredPosition = desiredPosition;
-    //
-    //        _progress += Time.deltaTime * moveSpeed;
-    //
-    //        yield return null;
-    //    }
-    //
-    //    rect_Image.gameObject.SetActive(false);
-    //    OnAnimationEnd?.Invoke();
-    //}
+    private void Animation()
+    {
+
+        if (_isAnimating)
+        {
+            if (!_startEventTriggered)
+            {
+                _startEventTriggered = true;
+                OnAnimationStart?.Invoke();
+            }
+
+            if (ActiveMovablePoints.Count < frequency)
+            {
+                if (Time.time > _nextTime)
+                {
+                    _nextTime = Time.time + (1 / frequency);
+
+                    if (movablePoints.Count == 0)
+                    {
+                        PointProgress _point = new PointProgress(GameManager.GetPoint(), 0);
+
+                        _point.Point.gameObject.SetActive(true);
+
+                        _point.Point.transform.SetParent(transform);
+                        _point.Point.transform.localPosition = Vector3.zero;
+                        _point.Point.transform.localScale = Vector3.one;
+
+                        ActiveMovablePoints.Add(_point);
+                    }
+                    else
+                    {
+                        PointProgress _point = movablePoints.Dequeue();
+
+                        _point.Point.gameObject.SetActive(true);
+                        _point.Point.transform.localPosition = Vector3.zero;
+                        _point.Point.transform.localScale = Vector3.one;
+
+                        ActiveMovablePoints.Add(_point);
+                    }
+                }
+            }
+
+            xDiff = end.x;
+            yDiff = end.y;
+            pos = Vector3.zero;
+
+            for (int i = 0; i < ActiveMovablePoints.Count; i++)
+            {
+                if (ActiveMovablePoints[i].IsDone)
+                {
+                    ActiveMovablePoints[i] = new PointProgress(ActiveMovablePoints[i].Point);
+
+                    if (_onFirstPointArrive == false)
+                    {
+                        _onFirstPointArrive = true;
+                        OnFirstPoint?.Invoke();
+                    }
+                }
+
+                currentProgress = Normalize(ActiveMovablePoints[i].Progress + Time.deltaTime * moveSpeed, 0, 1);
+
+                if (xDiff < rectTransform.anchoredPosition.x)
+                {
+                    pos.x = Mathf.Lerp(0, end.x, currentProgress) * horizontalCurve.Evaluate(currentProgress);
+                    pos.y = yDiff * verticalCurve.Evaluate(currentProgress);
+                }
+                else
+                {
+                    pos.x = Mathf.Lerp(0, end.x, currentProgress);
+                    pos.y = yDiff * verticalCurve.Evaluate(currentProgress);
+                }
+
+                ActiveMovablePoints[i].Point.Position = pos;
+                ActiveMovablePoints[i] = new PointProgress(ActiveMovablePoints[i].Point, currentProgress);
+            }
+        }
+        else if (ActiveMovablePoints.Count > 0)
+        {
+            xDiff = end.x;
+            yDiff = end.y;
+            pos = Vector3.zero;
+
+            for (int i = 0; i < ActiveMovablePoints.Count; i++)
+            {
+                if (ActiveMovablePoints[i].IsDone)
+                {
+                    ActiveMovablePoints[i].Point.gameObject.SetActive(false);
+
+                    movablePoints.Enqueue(new PointProgress (ActiveMovablePoints[i].Point));
+
+                    ActiveMovablePoints.RemoveAt(i);
+
+                    if (!_endEventTriggered)
+                    {
+                        _endEventTriggered = true;
+                        OnAnimationEnd?.Invoke();
+                    }
+
+                    if (_onLastPointArrive == false && ActiveMovablePoints.Count == 0)
+                    {
+                        _onLastPointArrive = true;
+                        OnLastPoint?.Invoke();
+
+                        ResetAnim();
+                        return;
+                    }
+
+                    continue;
+                }
+
+                currentProgress = Normalize(ActiveMovablePoints[i].Progress + Time.deltaTime * moveSpeed, 0, 1);
+
+                if (xDiff < rectTransform.anchoredPosition.x)
+                {
+                    pos.x = Mathf.Lerp(0, end.x, currentProgress) * horizontalCurve.Evaluate(currentProgress);
+                    pos.y = yDiff * verticalCurve.Evaluate(currentProgress);
+                }
+                else
+                {
+                    pos.x = Mathf.Lerp(0, end.x, currentProgress);
+                    pos.y = yDiff * verticalCurve.Evaluate(currentProgress);
+                }
+
+                ActiveMovablePoints[i].Point.Position = pos;
+                ActiveMovablePoints[i] = new PointProgress(ActiveMovablePoints[i].Point, currentProgress);
+            }
+        }
+
+    }
+
+    public void ResetAnim()
+    {
+        ActiveMovablePoints.Clear();
+
+        _isAnimating = false;
+
+        _startEventTriggered = false;
+        _endEventTriggered = false;
+
+        _onFirstPointArrive = false;
+        _onLastPointArrive = false;
+
+        currentProgress = 0;
+    }
+
+    public void PoolPoints()
+    {
+        movablePoints = new Queue<PointProgress>();
+        ActiveMovablePoints = new List<PointProgress>();
+
+        for (int i = 0; i < frequency; i++)
+        {
+            MovablePoint _m = GameManager.GetPoint();
+
+            movablePoints.Enqueue(new PointProgress(_m));
+            _m.transform.SetParent(transform);
+
+            _m.transform.localPosition = Vector3.zero;
+            _m.transform.localScale = Vector3.one;
+        }
+    }
 }

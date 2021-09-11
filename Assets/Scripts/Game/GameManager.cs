@@ -72,7 +72,7 @@ public class GameManager : MonoBehaviour
 
     AsyncOperation loadOperation;
     float _progress;
-    WaitForSeconds waitTime = new WaitForSeconds(1.5f);
+    readonly WaitForSeconds waitTime = new WaitForSeconds(1.5f);
 
     bool _isLoading = false;
 
@@ -100,6 +100,8 @@ public class GameManager : MonoBehaviour
         musicLoopSource.loop = true;
         musicLoopSource.clip = musicLoop;
         musicLoopSource.Play();
+
+
     }
 
     private void PoolPoints()
@@ -109,6 +111,7 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < pointsCount; i++)
         {
             MovablePoint _m = Instantiate(pointPrefab, poolRoot);
+            _m.gameObject.SetActive(false);
             MovablePoints.Enqueue(_m);   
         }
     }
