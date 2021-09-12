@@ -343,6 +343,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7928637195730024472}
   - component: {fileID: 6568058744716842441}
+  - component: {fileID: -2440447431753228504}
+  - component: {fileID: 216002904163984737}
   m_Layer: 5
   m_Name: Node
   m_TagString: Untagged
@@ -381,6 +383,32 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6238385666585673209}
   m_CullTransparentMesh: 1
+--- !u!114 &-2440447431753228504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6238385666585673209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db661a7e067749c4d9d09160e4f6787a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &216002904163984737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6238385666585673209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82d70320203b03c408af641663f45aea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  minMaxRotation: {x: -15, y: 15}
+  rotationSpeed: 1.5
 --- !u!1 &7699123861434017528
 GameObject:
   m_ObjectHideFlags: 0

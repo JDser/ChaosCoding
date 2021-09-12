@@ -1,8 +1,6 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using System.Collections;
 
 [System.Serializable]
 public struct NodeConnection
@@ -93,7 +91,7 @@ public struct NodeConnection
     #endregion
 }
 
-public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+public abstract class NodeBase : MonoBehaviour
 {
     #region Variables
     [Header("Node Setup")]
@@ -107,10 +105,6 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
     [SerializeField] Transform container_inputs;
     [SerializeField] Transform container_outputs;
 
-    [Header("Rotation")]
-    [SerializeField] Vector2 minMaxRotation;
-    [SerializeField] float rotationSpeed = 1.5f;
-
     [Header("Prefabs")]
     [SerializeField] NodeInputBase inputPrefab;
 
@@ -123,22 +117,14 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
     [SerializeField] protected InputData[] outputs;
 
     #region NonSerialized
-    protected Canvas canvas;
-    protected RectTransform dragRectTransform;
+    protected RectTransform rectTransform;
 
     protected NodeConnection[] _incomingConnections;
     protected NodeConnection[] _outgoingConnections; 
     
     protected UILineAnimation[] lineAnims;
 
-    bool _isDrag;
-
-    Vector3 prevMousePosition;
-    Vector3 currentMousePosition;
-
-    Vector3 deltaPosition;
-
-    Vector3 newRotation;
+    protected UIAnimator animator;
     #endregion
 
     #endregion
@@ -146,8 +132,8 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
     #region BuiltIn Methods
     protected virtual void Awake()
     {
-        dragRectTransform = transform.GetComponent<RectTransform>();
-        canvas = GetComponentInParent<Canvas>();
+        rectTransform = transform.GetComponent<RectTransform>();
+        animator = GetComponent<UIAnimator>();
     }
 
     protected virtual void Start() { }
@@ -160,16 +146,6 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
     }
     #endif
 
-    protected void Update()
-    {
-        if (!_isDrag)
-        {
-            newRotation.z -= newRotation.z * rotationSpeed;
-            newRotation.z = Mathf.Clamp(newRotation.z, minMaxRotation.x, minMaxRotation.y);
-
-            dragRectTransform.rotation = Quaternion.Euler(newRotation);
-        }
-    }
     #endregion
 
     #region Node Setup
@@ -183,6 +159,8 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
         SetupWindow();
 
         SetupLineAnimators();
+
+
     }
 
     protected virtual void SetupOutputs()
@@ -223,13 +201,13 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
 
     protected virtual void SetupWindow()
     {
-        float _height = dragRectTransform.sizeDelta.y;
+        float _height = rectTransform.sizeDelta.y;
         if (inputs.Length > outputs.Length)
             _height += 45 * (inputs.Length - 1);
         else
             _height += 45 * (outputs.Length - 1);
 
-        dragRectTransform.sizeDelta = new Vector2(dragRectTransform.sizeDelta.x, _height);
+        rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, _height);
     }
 
     protected virtual void SetupLineAnimators()
@@ -293,7 +271,7 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
             if (_outgoingConnections[i].IsValid == false)
             {
                 LevelManager.PlaySound(deniedClip);
-                StartCoroutine(FailRoutine());
+                animator.ChangeSize();
                 return;
             }
 
@@ -301,7 +279,7 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
         }
 
         LevelManager.PlaySound(confirmClip);
-        StartCoroutine(ShakeAnimationRoutine());
+        animator.Shake();
     }
 
     public virtual void Stop()
@@ -335,7 +313,6 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
                 _outgoingConnections[i].InputNode.Stop();
         }
     }
-
 
     #region Connection Managment
     public virtual void AddOutputConnection(NodeBase inputNode, int otherInputIndex, int thisOutputIndex)
@@ -374,8 +351,7 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
 
         _outgoingConnections[connectionIndex].InputNode.ClearIncomingConnection(_outgoingConnections[connectionIndex].InputIndex);
         _outgoingConnections[connectionIndex].ClearInput();
-    } 
-    
+    }   
     protected virtual void ClearOutgoingConnectionIgnore(int connectionIndex)
     {
         if (_outgoingConnections[connectionIndex].IsValid == false) return;
@@ -383,77 +359,10 @@ public abstract class NodeBase : MonoBehaviour, IPointerDownHandler, IBeginDragH
         _outgoingConnections[connectionIndex].ClearInput();
         _outgoingConnections[connectionIndex].NodeOutputBase.LineRenderer.Clear();
     }
+
     protected virtual void ClearIncomingConnection(int connectionIndex)
     {
         _incomingConnections[connectionIndex].ClearOutput();
-    }
-    #endregion
-
-    #region Interfaces
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        dragRectTransform.SetAsLastSibling();
-    }
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        _isDrag = true;
-    }
-    public void OnDrag(PointerEventData eventData)
-    {
-        #region Rotation
-        currentMousePosition = Input.mousePosition;
-
-        deltaPosition = (currentMousePosition - prevMousePosition).normalized;
-
-        newRotation.z -= deltaPosition.x * rotationSpeed;
-        newRotation.z = Mathf.Clamp(newRotation.z, minMaxRotation.x, minMaxRotation.y);
-
-        dragRectTransform.rotation = Quaternion.Euler(newRotation);
-        prevMousePosition = Input.mousePosition;
-        #endregion
-
-        dragRectTransform.anchoredPosition += eventData.delta / canvas.scaleFactor;
-    }
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        _isDrag = false;
-    }
-    #endregion
-
-    #region Animations
-    protected IEnumerator ShakeAnimationRoutine()
-    {
-        float _progress = 0;
-        float zAmount;
-
-        while (_progress < 1)
-        {
-            _progress += Time.deltaTime * 5;
-
-            zAmount = Mathf.Sin(_progress * 50) * 2.5f;
-
-            dragRectTransform.rotation = Quaternion.Euler(0, 0, zAmount);
-
-            yield return null;
-        }
-    }
-    protected IEnumerator FailRoutine()
-    {
-        float _progress = 0;
-        float zAmount;
-
-        Vector3 prevScale = dragRectTransform.localScale;
-
-        while (_progress < Mathf.PI)
-        {
-            _progress += Time.deltaTime * 20;
-            zAmount = -(Mathf.Sin(_progress) * 0.2f - 1);
-            dragRectTransform.localScale = new Vector3(zAmount, zAmount, zAmount);
-
-            yield return null;
-        }
-
-        dragRectTransform.localScale = prevScale;
     }
     #endregion
 }

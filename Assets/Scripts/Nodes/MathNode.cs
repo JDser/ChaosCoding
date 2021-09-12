@@ -46,7 +46,7 @@ public class MathNode : NodeBase
 
         if (string.IsNullOrEmpty(originData.DefaultValue))
         {
-            _incomingConnections[connectionIndex].NodeInputBase.Name = originData.DataName;
+            _incomingConnections[connectionIndex].NodeInputBase.Name = originData.DataName; // Error // Not setted originData
             inputs[connectionIndex].DefaultValue = null;
         }
         else
@@ -59,17 +59,6 @@ public class MathNode : NodeBase
         CheckNewOutput();
     }
     #endregion
-
-    protected override void Awake()
-    {
-        base.Awake();
-    }
-
-    protected override void Start()
-    {
-        base.Start();
-        SetupNode();
-    }
 
     public override void CheckNewOutput()
     {
@@ -139,15 +128,9 @@ public class MathNode : NodeBase
         }
     }
 
-    protected override void OnAnimationStart()
-    {
+    protected override void OnAnimationStart() { }
 
-    }
-
-    protected override void OnAnimationEnd()
-    {
-
-    }
+    protected override void OnAnimationEnd() { }
 
     #region Operations Logic
     private string HandleAdd(string a,string b)

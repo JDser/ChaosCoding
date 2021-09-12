@@ -94,17 +94,29 @@ public class UILineAnimation : UILineRenderer
         Animation();
     }
 
-
     protected override void OnDestroy()
     {
         base.OnDestroy();
-        StopAllCoroutines();
+
+        if (movablePoints != null && movablePoints.Count !=0)
+        {
+            for (int i = 0; i < movablePoints.Count; i++)
+            {
+                GameManager.ReturnPoint(movablePoints.Dequeue().Point);
+            }
+        }
+        if (ActiveMovablePoints != null && ActiveMovablePoints.Count != 0)
+        {
+            for (int i = 0; i < ActiveMovablePoints.Count; i++)
+            {
+                GameManager.ReturnPoint(ActiveMovablePoints[i].Point);
+            }
+        }
     }
     #endregion
 
     private void Animation()
     {
-
         if (_isAnimating)
         {
             if (!_startEventTriggered)
@@ -178,7 +190,7 @@ public class UILineAnimation : UILineRenderer
                 ActiveMovablePoints[i] = new PointProgress(ActiveMovablePoints[i].Point, currentProgress);
             }
         }
-        else if (ActiveMovablePoints.Count > 0)
+        else if (ActiveMovablePoints.Count > 0) // NullReferenceException Object reference nott sett to an instance of an object
         {
             xDiff = end.x;
             yDiff = end.y;
