@@ -65,7 +65,13 @@ public class LevelManager : MonoBehaviour
     CanvasScaler[] scalers;
 
     NodeBase _startNode;
+    NodeBase[] _spawnedNodes;
     NodeBase _endNode;
+
+
+    readonly WaitForSeconds waitTime = new WaitForSeconds(0.25f);
+    readonly WaitForSeconds waitTimeLong = new WaitForSeconds(1);
+
     #endregion
 
     #region Properties
@@ -94,6 +100,7 @@ public class LevelManager : MonoBehaviour
 
     #endregion
 
+    #region BuiltIn Methods
     protected virtual void Awake()
     {
         Instance = this;
@@ -115,28 +122,45 @@ public class LevelManager : MonoBehaviour
 
         SpawnNodes();
     }
+    #endregion
 
     protected virtual void OnCheckEnd(bool result)
     {
         if (result)
         {
-            InteractCanvas = false;
-            GameManager.NextLevel();
+            StartCoroutine(UnspawnNodesRoutine());
         }
+    }
+    protected virtual IEnumerator UnspawnNodesRoutine()
+    {
+        InteractCanvas = false;
+
+        yield return waitTimeLong;
+
+        _startNode.UnSpawn();
+        yield return waitTime;
+
+        for (int i = 0; i < _spawnedNodes.Length; i++)
+        {
+            _spawnedNodes[i].UnSpawn();
+            yield return waitTime;
+        }
+
+        _endNode.UnSpawn();
+        yield return waitTime;
+
+        GameManager.NextLevel();
     }
 
     protected void SpawnNodes()
     {
         StartCoroutine(SpawnNodesRoutine());
     }
-
-    readonly WaitForSeconds waitTime = new WaitForSeconds(0.25f);
-
     protected virtual IEnumerator SpawnNodesRoutine()
     {
-        Debug.LogError("Add Nodes Spawn Animation");
-
         InteractCanvas = false;
+
+        yield return waitTimeLong;
 
         _startNode = Instantiate(startNodePrefab.Prefab, scrollRectContent);
         _startNode.SetNewOutput(0, startNodePrefab.OutputData);
@@ -145,19 +169,24 @@ public class LevelManager : MonoBehaviour
 
         yield return waitTime;
 
+        _spawnedNodes = new NodeBase[nodesToSpawn.Length];
+
         int index = 0;
         for (int i = 0; i < nodesToSpawn.Length; i++)
         {
             NodeBase node = Instantiate(nodesToSpawn[i].Prefab, scrollRectContent);
 
             for (int y = 0; y < nodesToSpawn[i].Inputs; y++)
-                node.SetNewInput(y, nodesToSpawn[i].InputData(y)); // Error
+                node.SetNewInput(y, nodesToSpawn[i].InputData(y));
+
             node.SetNewOutput(0, nodesToSpawn[i].OutputData);
+            
 
             node.SetupNode();
 
             node.GetComponent<RectTransform>().anchoredPosition = new Vector2(40 * index, -70 * index);
             index++;
+            _spawnedNodes[i] = node;
 
             yield return waitTime;
         }
@@ -179,6 +208,7 @@ public class LevelManager : MonoBehaviour
     public void StartSimulation()
     {
         raycasters[1].enabled = false;
+        Debug.LogError("Some effects");
 
         _startNode.Enact();
         startButton.SetActive(false);
@@ -188,6 +218,7 @@ public class LevelManager : MonoBehaviour
     public void StopSimulation()
     {
         raycasters[1].enabled = true;
+
 
         _startNode.Stop();
         startButton.SetActive(true);

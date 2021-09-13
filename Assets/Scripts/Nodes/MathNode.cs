@@ -22,9 +22,8 @@ public class MathNode : NodeBase
     {
         base.AddInputConnection(inputNode, thisInputIndex, otherOutputIndex);
 
+
         NodeConnection current = _incomingConnections[thisInputIndex];
-
-
         if (string.IsNullOrEmpty(current.OutputStruct.DefaultValue))
         {
             current.NodeInputBase.Name = current.OutputStruct.DataName;
@@ -44,16 +43,19 @@ public class MathNode : NodeBase
     {
         base.ClearIncomingConnection(connectionIndex);
 
-        if (string.IsNullOrEmpty(originData.DefaultValue))
-        {
-            _incomingConnections[connectionIndex].NodeInputBase.Name = originData.DataName; // Error // Not setted originData
-            inputs[connectionIndex].DefaultValue = null;
-        }
-        else
-        {
-            _incomingConnections[connectionIndex].NodeInputBase.Name = originData.DefaultValue;
-            inputs[connectionIndex].DefaultValue = originData.DefaultValue;
-        }
+        _incomingConnections[connectionIndex].NodeInputBase.Name = originData.DataName;
+        inputs[connectionIndex].DefaultValue = null;
+
+        //if (string.IsNullOrEmpty(originData.DefaultValue))
+        //{
+        //    _incomingConnections[connectionIndex].NodeInputBase.Name = originData.DataName;
+        //    inputs[connectionIndex].DefaultValue = null;
+        //}
+        //else
+        //{
+        //    _incomingConnections[connectionIndex].NodeInputBase.Name = originData.DefaultValue;
+        //    inputs[connectionIndex].DefaultValue = originData.DefaultValue;
+        //}
 
         currentType = originData.Type;
         CheckNewOutput();
@@ -128,9 +130,11 @@ public class MathNode : NodeBase
         }
     }
 
-    protected override void OnAnimationStart() { }
-
-    protected override void OnAnimationEnd() { }
+    public override void SetNewOutput(int index, InputData newData)
+    {
+        base.SetNewOutput(index, newData);
+        originData = newData;
+    }
 
     #region Operations Logic
     private string HandleAdd(string a,string b)

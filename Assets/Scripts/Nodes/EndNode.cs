@@ -15,7 +15,7 @@ public class EndNode : NodeBase
             if (_incomingConnections[i].IsValid == false)
             {
                 LevelManager.PlaySound(deniedClip);
-                animator.ChangeSize();
+                animator.SizeAnimation();
 
                 OnCheckEnd?.Invoke(false);
                 return;
@@ -23,7 +23,7 @@ public class EndNode : NodeBase
             else if (_incomingConnections[i].OutputStruct.DefaultValue != inputs[i].DefaultValue)
             {
                 LevelManager.PlaySound(deniedClip);
-                animator.ChangeSize();
+                animator.SizeAnimation();
 
                 OnCheckEnd?.Invoke(false);
                 return;
@@ -31,14 +31,10 @@ public class EndNode : NodeBase
         }
 
         LevelManager.PlaySound(confirmClip);
-        animator.Shake();
+        animator.ShakeAnimation();
 
         OnCheckEnd?.Invoke(true);
     }
 
     public override void CheckNewOutput() { }
-
-    protected override void OnAnimationStart() { }
-
-    protected override void OnAnimationEnd() { }
 }

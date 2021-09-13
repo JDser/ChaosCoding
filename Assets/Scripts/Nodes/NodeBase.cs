@@ -125,6 +125,18 @@ public abstract class NodeBase : MonoBehaviour
     protected UILineAnimation[] lineAnims;
 
     protected UIAnimator animator;
+
+    readonly AnimationCurve popupCurve = new AnimationCurve(
+    new Keyframe(0, 0),
+    new Keyframe(0.7f, 1.2f),
+    new Keyframe(0.9f, 0.9f),
+    new Keyframe(1, 1)
+    );
+    readonly AnimationCurve unspawnCurve = new AnimationCurve(
+    new Keyframe(0, 1),
+    new Keyframe(0.2f, 1.2f),
+    new Keyframe(1, 0)
+    );
     #endregion
 
     #endregion
@@ -135,8 +147,6 @@ public abstract class NodeBase : MonoBehaviour
         rectTransform = transform.GetComponent<RectTransform>();
         animator = GetComponent<UIAnimator>();
     }
-
-    protected virtual void Start() { }
 
     #if UNITY_EDITOR
     protected void OnValidate()
@@ -160,7 +170,7 @@ public abstract class NodeBase : MonoBehaviour
 
         SetupLineAnimators();
 
-
+        animator.SizeAnimation(popupCurve, 2);
     }
 
     protected virtual void SetupOutputs()
@@ -219,49 +229,32 @@ public abstract class NodeBase : MonoBehaviour
             lineAnims[i] = (UILineAnimation)_outgoingConnections[i].NodeOutputBase.LineRenderer;
             lineAnims[i].SecondColor = _outgoingConnections[i].NodeOutputBase.InputType.SecondColor;
 
-            lineAnims[i].OnAnimationStart += OnAnimationStart;
-            lineAnims[i].OnAnimationEnd += OnAnimationEnd;
+            //lineAnims[i].OnAnimationStart += OnAnimationStart;
+            //lineAnims[i].OnAnimationEnd += OnAnimationEnd;
 
             lineAnims[i].OnFirstPoint += OnFirstPoint;
             lineAnims[i].OnLastPoint += OnLastPoint;
         }
     }
 
-    public void SetNewOutput(int index, InputData newData)
-    {
-        if (index >= outputs.Length) 
-            System.Array.Resize(ref outputs, index + 1);
-
-        outputs[index] = newData;
-    }
-
-    public void SetNewInput(int index, InputData newData)
+    public virtual void SetNewInput(int index, InputData newData)
     {
         if (index >= inputs.Length)
             System.Array.Resize(ref inputs, index + 1);
 
         inputs[index] = newData;
     }
+
+    public virtual void SetNewOutput(int index, InputData newData)
+    {
+        if (index >= outputs.Length) 
+            System.Array.Resize(ref outputs, index + 1);
+
+        outputs[index] = newData;
+    }
     #endregion
 
-    public bool HasReferenceTo(NodeBase reference)
-    {
-        bool hasReference = false;
-
-        for (int i = 0; i < _outgoingConnections.Length; i++)
-        {
-            if (_outgoingConnections[i].IsValid == false)
-                continue;
-
-            if (_outgoingConnections[i].InputNode == reference)
-                return true;
-
-            hasReference = _outgoingConnections[i].InputNode.HasReferenceTo(reference);
-        }
-
-        return hasReference;
-    }
-
+    #region 
     public virtual void Enact()
     { 
         StopAllCoroutines();
@@ -271,7 +264,7 @@ public abstract class NodeBase : MonoBehaviour
             if (_outgoingConnections[i].IsValid == false)
             {
                 LevelManager.PlaySound(deniedClip);
-                animator.ChangeSize();
+                animator.SizeAnimation();
                 return;
             }
 
@@ -279,7 +272,7 @@ public abstract class NodeBase : MonoBehaviour
         }
 
         LevelManager.PlaySound(confirmClip);
-        animator.Shake();
+        animator.ShakeAnimation();
     }
 
     public virtual void Stop()
@@ -290,11 +283,18 @@ public abstract class NodeBase : MonoBehaviour
         }
     }
 
+    public virtual void UnSpawn()
+    {
+        animator.SizeAnimation(unspawnCurve, 2);
+    }
+
     public abstract void CheckNewOutput();
+    #endregion
 
-    protected abstract void OnAnimationStart();
-
-    protected abstract void OnAnimationEnd();   
+    #region Animation Events
+    //protected abstract void OnAnimationStart();
+    //
+    //protected abstract void OnAnimationEnd();   
     
     protected virtual void OnFirstPoint()
     {
@@ -313,6 +313,7 @@ public abstract class NodeBase : MonoBehaviour
                 _outgoingConnections[i].InputNode.Stop();
         }
     }
+    #endregion
 
     #region Connection Managment
     public virtual void AddOutputConnection(NodeBase inputNode, int otherInputIndex, int thisOutputIndex)
@@ -363,6 +364,24 @@ public abstract class NodeBase : MonoBehaviour
     protected virtual void ClearIncomingConnection(int connectionIndex)
     {
         _incomingConnections[connectionIndex].ClearOutput();
+    }
+    
+    public bool HasReferenceTo(NodeBase reference)
+    {
+        bool hasReference = false;
+
+        for (int i = 0; i < _outgoingConnections.Length; i++)
+        {
+            if (_outgoingConnections[i].IsValid == false)
+                continue;
+
+            if (_outgoingConnections[i].InputNode == reference)
+                return true;
+
+            hasReference = _outgoingConnections[i].InputNode.HasReferenceTo(reference);
+        }
+
+        return hasReference;
     }
     #endregion
 }

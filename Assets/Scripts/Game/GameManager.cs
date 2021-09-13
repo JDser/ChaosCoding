@@ -100,8 +100,6 @@ public class GameManager : MonoBehaviour
         musicLoopSource.loop = true;
         musicLoopSource.clip = musicLoop;
         musicLoopSource.Play();
-
-
     }
 
     private void PoolPoints()

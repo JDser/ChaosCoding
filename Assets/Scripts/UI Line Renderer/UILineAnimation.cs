@@ -96,8 +96,6 @@ public class UILineAnimation : UILineRenderer
 
     protected override void OnDestroy()
     {
-        base.OnDestroy();
-
         if (movablePoints != null && movablePoints.Count !=0)
         {
             for (int i = 0; i < movablePoints.Count; i++)
@@ -112,6 +110,8 @@ public class UILineAnimation : UILineRenderer
                 GameManager.ReturnPoint(ActiveMovablePoints[i].Point);
             }
         }
+
+        base.OnDestroy();
     }
     #endregion
 
@@ -190,7 +190,7 @@ public class UILineAnimation : UILineRenderer
                 ActiveMovablePoints[i] = new PointProgress(ActiveMovablePoints[i].Point, currentProgress);
             }
         }
-        else if (ActiveMovablePoints.Count > 0) // NullReferenceException Object reference nott sett to an instance of an object
+        else if (ActiveMovablePoints!=null && ActiveMovablePoints.Count > 0)
         {
             xDiff = end.x;
             yDiff = end.y;
@@ -202,7 +202,7 @@ public class UILineAnimation : UILineRenderer
                 {
                     ActiveMovablePoints[i].Point.gameObject.SetActive(false);
 
-                    movablePoints.Enqueue(new PointProgress (ActiveMovablePoints[i].Point));
+                    movablePoints.Enqueue(new PointProgress(ActiveMovablePoints[i].Point));
 
                     ActiveMovablePoints.RemoveAt(i);
 
@@ -241,7 +241,6 @@ public class UILineAnimation : UILineRenderer
                 ActiveMovablePoints[i] = new PointProgress(ActiveMovablePoints[i].Point, currentProgress);
             }
         }
-
     }
 
     public void ResetAnim()
